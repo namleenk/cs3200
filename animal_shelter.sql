@@ -28,41 +28,19 @@ create table visitor (
 		on update cascade on delete restrict
 );
 
-
--- application weak entity
-create table application (
-	app_id int auto_increment primary key,
-    date_of_birth date,
-    household_members int,
-    current_pets int,
-    occupation varchar(64),
-    status enum('denied', 'accepted', 'in progress'),
-    -- visitor submits application
-    visitor int,
-    foreign key (visitor) references visitor(visitor_id) on update cascade on delete restrict,
-    -- approver approves application
-    approver int not null,
-    foreign key (approver) references approver(approver_id) on update cascade on delete restrict
-);
-
 -- species strong entity
 create table species (
-	species_id int primary key,
+	species_id int auto_increment primary key,
     scientific_name varchar(128),
-    common_name varchar(64),
     breed varchar(64)
 );
 
 -- kennel strong entity
 create table kennel (
 	kid int auto_increment primary key,
-    -- composite attributes for size
-    length int,
     width int,
     depth int,
-    -- animal is in kennel
-    animal int,
-    foreign key (animal) references animal(animal_id) on update cascade on delete cascade
+    height int
 );
 
 -- animal strong entity
@@ -70,20 +48,19 @@ create table animal (
 	animal_id int auto_increment primary key,
     name varchar(64),
     date_of_birth date,
-    sex enum('female', 'male'),
+    sex enum('F', 'M'),
     neutered bool,
     -- EDIT THESE OPTIONS
-    adoption_status enum('in shelter', 'in progress', 'adopted'),
+    adoption_status enum('shelter', 'pending', 'adopted'),
     intake_date date,
+    -- animal is in a kennel: 1-1 relationship
+    -- we moved kennel to its own table to make it third normal form
+	kennel int unique,
+    foreign key (kennel) references kennel(kid) on update cascade on delete restrict,
     -- animal is one of a species
     species int not null,
-    foreign key (species) references species(species_id) on update cascade on delete restrict,
-    -- animal is in a kennel
-    kennel int not null,
-    foreign key (kennel) references kennel(kid) on update cascade on delete restrict,
-    -- animal has appointment
-    appointment int,
-    foreign key (appointment) references appointment(aid) on update cascade on delete cascade
+    foreign key (species) references species(species_id) on update cascade on delete restrict
+
 );
 
 -- staff strong entity
@@ -95,10 +72,10 @@ create table staff (
     salary int,
     -- username is an AK
     username varchar(64) unique,
-    password varchar(64),
+    password varchar(64)
     -- manager manages staff
-    manager int not null,
-    foreign key (manager) references manager(manager_id) on update cascade on delete cascade
+    -- manager int not null,
+    -- foreign key (manager) references manager(manager_id) on update cascade on delete cascade
 );
 
 -- vet subclass for staff
@@ -122,7 +99,7 @@ create table approver (
 
 -- urgent care strong entity
 create table urgent_care (
-	uid int auto_increment primary key,
+	uc_id int auto_increment primary key,
     reason varchar(256),
     visit_date date,
     diagnosis varchar(128),
@@ -136,7 +113,10 @@ create table appointment (
     app_date date,
     -- vet conducts appointment
     vet int,
-    foreign key (vet) references vet(vet_id) on update cascade on delete cascade
+    foreign key (vet) references vet(vet_id) on update cascade on delete cascade,
+     -- animal has appointment
+    animal int,
+    foreign key (animal) references animal(animal_id) on update cascade on delete cascade
 );
 
 -- appiontment subclass {mandatory, or}
@@ -155,6 +135,23 @@ create table checkup (
     foreign key (aid) references appointment(aid) on update restrict on delete restrict
 );
 
+-- application weak entity
+create table application (
+	app_id int auto_increment primary key,
+    animal_id int,
+    date_of_birth date,
+    household_members int,
+    current_pets int,
+    occupation varchar(64),
+    status enum('denied', 'accepted', 'pending'),
+    -- visitor submits application
+    visitor int,
+    foreign key (visitor) references visitor(visitor_id) on update cascade on delete restrict,
+    -- approver approves application
+    approver int not null,
+    foreign key (approver) references approver(approver_id) on update cascade on delete restrict
+);
+
 -- vaccine strong entity
 create table vaccine (
 	vac_id int auto_increment primary key,
@@ -165,10 +162,10 @@ create table vaccine (
 -- animal goes to urgent care (*..*)
 create table animal_urgent_care (
 	animal int,
-    uc int,
-    primary key(animal, uc),
+    uc_id int,
+    primary key(animal, uc_id),
     foreign key (animal) references animal(animal_id) on update cascade on delete cascade,
-    foreign key (uc) references urgent_care(uid) on update cascade on delete cascade
+    foreign key (uc_id) references urgent_care(uc_id) on update cascade on delete cascade
 );
 
 -- appointment involves vaccine
@@ -195,5 +192,5 @@ create table is_for (
     application int,
     primary key(animal, application),
     foreign key (animal) references animal(animal_id) on update cascade on delete restrict,
-    foreign key (application) references application(aid) on update cascade on delete cascade
+    foreign key (application) references application(app_id) on update cascade on delete cascade
 );

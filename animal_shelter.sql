@@ -63,6 +63,17 @@ create table animal (
 
 );
 
+-- manager strong entity
+create table manager (
+	manager_id int auto_increment primary key,
+    m_name varchar(64),
+    hours_per_week int,
+    salary int,
+    -- username is an AK
+    username varchar(64) unique,
+    password varchar(64)
+);
+
 -- staff strong entity
 create table staff (
 	staff_id int auto_increment primary key,
@@ -72,10 +83,10 @@ create table staff (
     salary int,
     -- username is an AK
     username varchar(64) unique,
-    password varchar(64)
+    password varchar(64),
     -- manager manages staff
-    -- manager int not null,
-    -- foreign key (manager) references manager(manager_id) on update cascade on delete cascade
+    manager int not null,
+    foreign key (manager) references manager(manager_id) on update cascade on delete cascade
 );
 
 -- vet subclass for staff
@@ -83,12 +94,6 @@ create table vet (
 	vet_id int auto_increment primary key,
     accepting_new bool,
     foreign key (vet_id) references staff(staff_id) on update cascade on delete restrict
-);
-
--- manager subclass for staff
-create table manager (
-	manager_id int auto_increment primary key,
-    foreign key (manager_id) references staff(staff_id) on update cascade on delete restrict
 );
 
 -- approver subclass for staff

@@ -24,6 +24,7 @@ INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered
 INSERT INTO `animal_shelter`.`manager` (`m_name`, `hours_per_week`, `salary`, `username`, `password`) VALUES ('Lisa Bluder', '40', '50', 'lbluder', 'hawkeyes');
 INSERT INTO `animal_shelter`.`manager` (`m_name`, `hours_per_week`, `salary`, `username`, `password`) VALUES ('Geno Auriemma', '10', '12.5', 'gauriemma', 'uconn!');
 INSERT INTO `animal_shelter`.`manager` (`m_name`, `hours_per_week`, `salary`, `username`, `password`) VALUES ('Dawn Staley', '15', '15', 'dstaley', 'scarolina');
+INSERT INTO `animal_shelter`.`manager` (`m_name`, `hours_per_week`, `salary`, `username`, `password`) VALUES ('Lindsay Gottlieb', '20', '15', 'lgottlieb', 'travelers');
 
 INSERT INTO `animal_shelter`.`urgent_care` (`reason`, `visit_date`, `diagnosis`, `prognosis`) VALUES ('Itching behind ear', '2024-04-04', 'Fleas', 'Bathe with special shampoo for 2 weeks');
 INSERT INTO `animal_shelter`.`urgent_care` (`reason`, `visit_date`, `diagnosis`, `prognosis`) VALUES ('Limping when walking', '2024-03-27', 'Broken leg', 'Cast, rest leg for 2 months');
@@ -38,9 +39,35 @@ INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `sa
 INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `username`, `password`, `manager`) VALUES ('Kate Martin', '40', '1', '20', 'kmartin', 'iowa20', '1');
 INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `username`, `password`, `manager`) VALUES ('Nika Muhl', '35', '1', '15', 'nmuhl', 'uconn10', '2');
 INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `username`, `password`, `manager`) VALUES ('Raven Johnson', '40', '1', '20', 'rjohnson', 'sc25', '3');
+INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `username`, `password`, `manager`) VALUES ('Juju Watkins', '15', '0', '10', 'jwatkins', 'usc12', '4');
 
 INSERT INTO `animal_shelter`.`vet` (`vet_id`, `accepting_new`) VALUES ('4', '1');
 INSERT INTO `animal_shelter`.`vet` (`vet_id`, `accepting_new`) VALUES ('6', '0');
+INSERT INTO `animal_shelter`.`vet` (`vet_id`, `accepting_new`) VALUES ('7', '1');
 
 INSERT INTO `animal_shelter`.`approver` (`approver_id`) VALUES ('3');
 INSERT INTO `animal_shelter`.`approver` (`approver_id`) VALUES ('5');
+
+INSERT INTO `animal_shelter`.`vaccine` (`name`, `version`) VALUES ('Rabies vaccine', '1');
+INSERT INTO `animal_shelter`.`vaccine` (`name`, `version`) VALUES ('Lyme disease vaccine', '1');
+INSERT INTO `animal_shelter`.`vaccine` (`name`, `version`) VALUES ('Influenca vaccine', '2.5');
+
+INSERT INTO `animal_shelter`.`animal_urgent_care` (`animal`, `uc_id`) VALUES ('4', '1');
+INSERT INTO `animal_shelter`.`animal_urgent_care` (`animal`, `uc_id`) VALUES ('2', '2');
+
+INSERT INTO `animal_shelter`.`appointment` (`notes`, `app_date`, `vet`, `animal`) VALUES ('Annual health check-up', '2022-07-09', '4', '4');
+INSERT INTO `animal_shelter`.`appointment` (`notes`, `app_date`, `vet`, `animal`) VALUES ('Annual flu vaccination', '2024-02-15', '7', '2');
+
+INSERT INTO `animal_shelter`.`vaccination` (`aid`, `vaccination_given`, `reason`) VALUES ('2', 'Influenza', 'Annual flu shot');
+
+INSERT INTO `animal_shelter`.`checkup` (`aid`) VALUES ('1');
+
+INSERT INTO `animal_shelter`.`vaccinates` (`animal`, `staff`) VALUES ('4', '4');
+
+INSERT INTO `animal_shelter`.`appoint_vaccine` (`appointment`, `vaccine`) VALUES ('2', '3');
+
+INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `household_members`, `current_pets`, `occupation`, `status`, `visitor`, `approver`) VALUES ('Jelly Roll', '1984-12-04', '4', '2', 'singer', 'pending', '2', '3');
+INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `household_members`, `current_pets`, `occupation`, `status`, `visitor`, `approver`) VALUES ('Billie Eilish', '2001-12-18', '1', '0', 'singer', 'accepted', '3', '5');
+
+INSERT INTO `animal_shelter`.`is_for` (`animal`, `application`) VALUES ('1', '3');
+INSERT INTO `animal_shelter`.`is_for` (`animal`, `application`) VALUES ('4', '2');

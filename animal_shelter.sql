@@ -143,7 +143,7 @@ create table checkup (
 -- application weak entity
 create table application (
 	app_id int auto_increment primary key,
-    animal_id int,
+    applicant_name varchar(64),
     date_of_birth date,
     household_members int,
     current_pets int,

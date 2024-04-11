@@ -16,6 +16,7 @@ create table address (
 create table visitor (
 	visitor_id int auto_increment primary key,
     name varchar(64),
+    date_of_birth date,
     -- email is an AK
     email varchar(64) unique,
     -- visitor lives at address
@@ -199,3 +200,124 @@ create table is_for (
     foreign key (animal) references animal(animal_id) on update cascade on delete restrict,
     foreign key (application) references application(app_id) on update cascade on delete cascade
 );
+
+-- Functionality
+
+
+-- when an animal gets adopted, set its kennel to null
+delimiter $$
+create trigger empty_kennel
+	before update on animal for each row
+    begin 
+		if (new.adoption_status = "adopted") then
+			set new.kennel = null;
+        end if;
+    end $$
+delimiter ;
+
+UPDATE `animal_shelter`.`animal` SET `adoption_status` = 'adopted' WHERE (`animal_id` = 2);
+
+-- when an application gets updated (status set to 'accepted') 
+delimiter $$
+create trigger set_animal_to_adopted
+	before update on application for each row
+    begin 
+		declare animal
+        set animal_to_update = (select * from animal where animal_id = 
+			(select animal from 
+			(select * from is_for where application = new.app_id)));
+        if (new.status = 'accepted') then
+			set animal_to_update.adoption_status = 'adopted';
+        end if;
+    end $$
+
+delimiter ;
+	
+
+-- Return all animals that aren't adopted
+delimiter $$
+create procedure see_shelter_animals()
+	begin 
+		select * from animal where adoption_status != 'adopted';
+    end $$
+delimiter ;
+
+call see_shelter_animals();
+Error Code: 1054. Unknown column 'animal_id' in 'field list'
+
+-- Given animal's name, return its adoption status
+delimiter $$
+create procedure lookup_animal(in name_param varchar(64), in id_param int) 
+	begin 
+		if (id_param is not null) then
+			select * from animal where animal.animal_id = id_param;
+        else 
+			select * from animal where animal.name = name_param;
+        end if;
+    end $$
+delimiter ;
+
+drop procedure lookup_animal;
+call lookup_animal("Paul", null);
+
+-- Get the status of all applications
+delimiter $$
+create procedure check_all_app_status()
+	begin 
+		select * from application;
+    end $$
+delimiter ;
+
+call check_all_app_status();
+
+-- Get the status of a certain application, specified by email
+delimiter $$
+create procedure lookup_app_status(in email_param varchar(64))
+	begin
+		select status, email_param as email from application 
+        join visitor on visitor = visitor_id
+		where email_param = visitor.email;
+    end $$
+delimiter ;
+drop procedure lookup_app_status;
+call lookup_app_status("jroll@gmail.com");
+
+
+-- Retrieve number of animals in shelter and capacity percentage
+delimiter $$
+create function capacity_stats()
+	returns varchar(128) deterministic 
+    contains sql
+	
+	begin 
+		declare animal_count int;
+        declare total_capacity int;
+        declare capacity_percent float;
+        declare animals_in_shelter int;
+        
+        select count(*) from animal into animal_count; -- number of animals
+        select count(*) from kennel into total_capacity; -- number of kennels
+        (select count(*) from animal where kennel is not null) into animals_in_shelter;
+        -- number of in-shelter animals divided by total capacity
+        select animals_in_shelter / total_capacity * 100 into capacity_percent;
+        return concat("In-shelter animals: ", animals_in_shelter, ", total capacity: ", total_capacity, ", percent filled: ", capacity_percent);
+    end $$
+delimiter ;
+drop function capacity_stats;
+select capacity_stats();
+
+-- Retrieve all animals who have no application submitted for them
+delimiter $$
+create procedure animals_with_no_app()
+	begin 
+		-- get everything from animal that isn't in is_for
+        select * from animal 
+        join is_for on animal = animal_id
+        where animal_id not in (select animal from is_for);
+    end $$
+delimiter ;
+
+-- THIS DOES NOT WORK!!
+select * from is_for;
+
+call animals_with_no_app();

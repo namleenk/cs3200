@@ -20,6 +20,7 @@ INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('George', '2019-03-17', 'F', '0', 'shelter', '2024-01-13', '2', '1');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Sandy', '2016-05-09', 'M', '1', 'adopted', '2024-01-01', null, '2');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Ringo', '2020-03-14', 'F', '0', 'pending', '2021-12-19', '3', '4');
+INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Paul', '2004-02-19', 'M', '1', 'shelter', '2023-07-07', '2', '1');
 
 INSERT INTO `animal_shelter`.`manager` (`m_name`, `hours_per_week`, `salary`, `username`, `password`) VALUES ('Lisa Bluder', '40', '50', 'lbluder', 'hawkeyes');
 INSERT INTO `animal_shelter`.`manager` (`m_name`, `hours_per_week`, `salary`, `username`, `password`) VALUES ('Geno Auriemma', '10', '12.5', 'gauriemma', 'uconn!');
@@ -69,5 +70,5 @@ INSERT INTO `animal_shelter`.`appoint_vaccine` (`appointment`, `vaccine`) VALUES
 INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `household_members`, `current_pets`, `occupation`, `status`, `visitor`, `approver`) VALUES ('Jelly Roll', '1984-12-04', '4', '2', 'singer', 'pending', '2', '3');
 INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `household_members`, `current_pets`, `occupation`, `status`, `visitor`, `approver`) VALUES ('Billie Eilish', '2001-12-18', '1', '0', 'singer', 'accepted', '3', '5');
 
-INSERT INTO `animal_shelter`.`is_for` (`animal`, `application`) VALUES ('1', '3');
+INSERT INTO `animal_shelter`.`is_for` (`animal`, `application`) VALUES ('1', '1');
 INSERT INTO `animal_shelter`.`is_for` (`animal`, `application`) VALUES ('4', '2');

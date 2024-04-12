@@ -205,6 +205,7 @@ create table is_for (
 
 
 -- when an animal gets adopted, set its kennel to null
+-- THIS ALSO DOESNT WORK
 delimiter $$
 create trigger empty_kennel
 	before update on animal for each row

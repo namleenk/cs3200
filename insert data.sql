@@ -8,7 +8,6 @@ INSERT INTO `animal_shelter`.`address` (`street_num`, `street_name`, `city`, `st
 INSERT INTO `animal_shelter`.`address` (`street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('89', 'Symphony Road', 'Boston', 'MA', '02115');
 INSERT INTO `animal_shelter`.`address` (`street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('720', 'Darcy Lane', 'Raleigh', 'NC', '27606');
 
-
 INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Felis catus', 'Domestic shorthair');
 INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Felis catus', 'Persian');
 INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Canis lupis', 'Husky');

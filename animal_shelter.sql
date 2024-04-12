@@ -375,3 +375,7 @@ create procedure new_animal(in name_p varchar(64), in dob_p date, in sex_p enum(
 delimiter ;
 -- drop procedure new_animal;
 call new_animal("Spice", '1999-01-05', "F", 1, '2024-04-12', 13, "Canis lupus", "Husky");
+
+-- Delete staff (someone leaves or gets fired)
+-- procedure: takes in staff id or username
+

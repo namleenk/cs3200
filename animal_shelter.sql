@@ -376,6 +376,16 @@ delimiter ;
 -- drop procedure new_animal;
 call new_animal("Spice", '1999-01-05', "F", 1, '2024-04-12', 13, "Canis lupus", "Husky");
 
--- Delete staff (someone leaves or gets fired)
--- procedure: takes in staff id or username
+-- Delete application
+delimiter $$
+create procedure rescind_application (in app_id_param int)
+begin 
+if app_id_param in (select app_id from application where status = "accepted" ) then
+	signal sqlstate '45000' set message_text = "Adoption has already been completed, cannot remove application";
+else
+	delete from application
+		where app_id_param = app_id;
+end if;
+end $$ 
+delimiter ; 
 

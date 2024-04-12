@@ -4,11 +4,11 @@ INSERT INTO `animal_shelter`.`address` (`street_num`, `street_name`, `city`, `st
 INSERT INTO `animal_shelter`.`address` (`street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('360', 'Huntington Ave', 'Boston', 'MA', '02115');
 
 
-INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Felis Catus', 'Domestic shorthair');
-INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Felis Catus', 'Persian');
-INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Canis Lupis', 'Husky');
-INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Canis Lupis', 'German Shepard');
-INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Canis Lupis', 'Labradoodle');
+INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Felis catus', 'Domestic shorthair');
+INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Felis catus', 'Persian');
+INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Canis lupis', 'Husky');
+INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Canis lupis', 'German Shepard');
+INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Canis lupis', 'Labradoodle');
 
 
 INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('128', '128', '128');
@@ -16,11 +16,11 @@ INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('128'
 INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('128', '128', '64');
 
 
-INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Oats', '2022-04-21', 'M', '1', 'adopted', '2022-06-30', '1', '1');
+INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Oats', '2022-04-21', 'M', '1', 'adopted', '2022-06-30', null, '1');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('George', '2019-03-17', 'F', '0', 'shelter', '2024-01-13', '2', '1');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Sandy', '2016-05-09', 'M', '1', 'adopted', '2024-01-01', null, '2');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Ringo', '2020-03-14', 'F', '0', 'pending', '2021-12-19', '3', '4');
-INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Paul', '2004-02-19', 'M', '1', 'shelter', '2023-07-07', '2', '1');
+INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Paul', '2004-02-19', 'M', '1', 'shelter', '2023-07-07', '2', '6');
 
 INSERT INTO `animal_shelter`.`manager` (`m_name`, `hours_per_week`, `salary`, `username`, `password`) VALUES ('Lisa Bluder', '40', '50', 'lbluder', 'hawkeyes');
 INSERT INTO `animal_shelter`.`manager` (`m_name`, `hours_per_week`, `salary`, `username`, `password`) VALUES ('Geno Auriemma', '10', '12.5', 'gauriemma', 'uconn!');
@@ -72,3 +72,20 @@ INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `
 
 INSERT INTO `animal_shelter`.`is_for` (`animal`, `application`) VALUES ('1', '1');
 INSERT INTO `animal_shelter`.`is_for` (`animal`, `application`) VALUES ('4', '2');
+
+INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Wormus gigantus', 'Giant Sandworm');
+INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Cavia porcellus', 'Guinea Pig');
+INSERT INTO `animal_shelter`.`species` (`scientific_name`, `breed`) VALUES ('Oryctolagus cuniculus', 'Rabbit');
+
+INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('128', '128', '128');
+INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('128', '128', '128');
+INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('64', '64', '64');
+INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('256', '128', '64');
+INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('128', '128', '256');
+INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('128', '128', '128');
+INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('64', '64', '128');
+INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('256', '256', '26');
+INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('64', '128', '128');
+INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('64', '64', '128');
+INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('256', '256', '26');
+INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('64', '128', '128');

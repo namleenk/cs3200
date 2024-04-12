@@ -219,20 +219,20 @@ delimiter ;
 UPDATE `animal_shelter`.`animal` SET `adoption_status` = 'adopted' WHERE (`animal_id` = 2);
 
 -- when an application gets updated (status set to 'accepted') 
-delimiter $$
-create trigger set_animal_to_adopted
-	before update on application for each row
-    begin 
-		declare animal
-        set animal_to_update = (select * from animal where animal_id = 
-			(select animal from 
-			(select * from is_for where application = new.app_id)));
-        if (new.status = 'accepted') then
-			set animal_to_update.adoption_status = 'adopted';
-        end if;
-    end $$
+-- delimiter $$
+-- create trigger set_animal_to_adopted
+-- 	before update on application for each row
+--     begin 
+-- 		declare animal
+--         set animal_to_update = (select * from animal where animal_id = 
+-- 			(select animal from 
+-- 			(select * from is_for where application = new.app_id)));
+--         if (new.status = 'accepted') then
+-- 			set animal_to_update.adoption_status = 'adopted';
+--         end if;
+--     end $$
 
-delimiter ;
+-- delimiter ;
 	
 
 -- Return all animals that aren't adopted
@@ -258,7 +258,7 @@ create procedure lookup_animal(in name_param varchar(64), in id_param int)
     end $$
 delimiter ;
 
-drop procedure lookup_animal;
+-- drop procedure lookup_animal;
 call lookup_animal("Paul", null);
 
 -- Get the status of all applications
@@ -280,7 +280,7 @@ create procedure lookup_app_status(in email_param varchar(64))
 		where email_param = visitor.email;
     end $$
 delimiter ;
-drop procedure lookup_app_status;
+-- drop procedure lookup_app_status;
 call lookup_app_status("jroll@gmail.com");
 
 
@@ -304,8 +304,8 @@ create function capacity_stats()
         return concat("In-shelter animals: ", animals_in_shelter, ", total capacity: ", total_capacity, ", percent filled: ", capacity_percent);
     end $$
 delimiter ;
-drop function capacity_stats;
-select capacity_stats();
+-- drop function capacity_stats;
+-- select capacity_stats();
 
 -- Retrieve all animals who have no application submitted for them
 delimiter $$

@@ -43,13 +43,13 @@ INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Ringo', '2020-03-14', 'F', '0', 'pending', '2021-12-19', '3', '4');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Paul', '2004-02-19', 'M', '1', 'shelter', '2023-07-07', '4', '6');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Fargo', '2003-06-21', 'F', '1', 'shelter', '2022-08-09', '12', '3');
-INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Jessica', '2024-01-01', 'M', '1', 'shelter', '2024-01-01', '16', '5');
+INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Jessica', '2024-01-01', 'M', '1', 'shelter', '2024-01-01', '15', '5');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Twister', '2015-09-15', 'M', '1', 'shelter', '2024-03-09', '14', '5');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Fern', '2020-02-04', 'F', '0', 'shelter', '2022-04-09', '8', '4');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Viola', '2016-08-03', 'F', '1', 'shelter', '2024-05-06', '9', '2');
-
-
-
+INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Mustache', '2003-05-09', 'M', '1', 'shelter', '2020-09-09', '5', '1');
+INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('John', '2016-03-10', 'M', '1', 'shelter', '2023-04-20', '10', '3');
+INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Lyra', '2021-07-15', 'F', '0', 'shelter', '2022-07-20', '7', '2');
 
 INSERT INTO `animal_shelter`.`manager` (`m_name`, `hours_per_week`, `salary`, `username`, `password`) VALUES ('Lisa Bluder', '40', '50', 'lbluder', 'hawkeyes');
 INSERT INTO `animal_shelter`.`manager` (`m_name`, `hours_per_week`, `salary`, `username`, `password`) VALUES ('Geno Auriemma', '10', '12.5', 'gauriemma', 'uconn!');
@@ -105,5 +105,7 @@ INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `
 
 INSERT INTO `animal_shelter`.`is_for` (`animal`, `application`) VALUES ('1', '1');
 INSERT INTO `animal_shelter`.`is_for` (`animal`, `application`) VALUES ('4', '2');
+
+
 
 

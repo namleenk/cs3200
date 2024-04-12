@@ -99,11 +99,9 @@ INSERT INTO `animal_shelter`.`vaccinates` (`animal`, `staff`) VALUES ('4', '4');
 
 INSERT INTO `animal_shelter`.`appoint_vaccine` (`appointment`, `vaccine`) VALUES ('2', '3');
 
-INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `household_members`, `current_pets`, `occupation`, `status`, `visitor`, `approver`) VALUES ('Jelly Roll', '1984-12-04', '4', '2', 'singer', 'pending', '2', '3');
-INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `household_members`, `current_pets`, `occupation`, `status`, `visitor`, `approver`) VALUES ('Billie Eilish', '2001-12-18', '1', '0', 'singer', 'accepted', '3', '5');
+INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `household_members`, `current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('Jelly Roll', '1984-12-04', '4', '2', 'singer', 'pending', '1', '2', '3');
+INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `household_members`, `current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('Billie Eilish', '2001-12-18', '1', '0', 'singer', 'accepted', '1', '3', '5');
 
-INSERT INTO `animal_shelter`.`is_for` (`animal`, `application`) VALUES ('1', '1');
-INSERT INTO `animal_shelter`.`is_for` (`animal`, `application`) VALUES ('4', '2');
 
 
 

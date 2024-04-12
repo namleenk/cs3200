@@ -15,7 +15,7 @@ create table address (
 -- visitor strong entity
 create table visitor (
 	visitor_id int auto_increment primary key,
-    name varchar(64),
+    name varchar(64) not null,
     date_of_birth date,
     -- email is an AK
     email varchar(64) unique,
@@ -47,7 +47,7 @@ create table kennel (
 -- animal strong entity
 create table animal (
 	animal_id int auto_increment primary key,
-    name varchar(64),
+    name varchar(64) not null,
     date_of_birth date,
     sex enum('F', 'M'),
     neutered bool,
@@ -82,6 +82,7 @@ create table staff (
     hours_per_week int,
     full_time bool,
     salary int,
+    approver_status bool, -- can this staff approve adoption applications?
     -- username is an AK
     username varchar(64) unique,
     password varchar(64),
@@ -134,6 +135,7 @@ create table vaccination (
     -- FK to superclass
     foreign key (aid) references appointment(aid) on update restrict on delete restrict
 );
+
 -- checkup
 create table checkup (
 	aid int auto_increment primary key,
@@ -150,6 +152,9 @@ create table application (
     current_pets int,
     occupation varchar(64),
     status enum('denied', 'accepted', 'pending'),
+    -- application is for an animal
+    animal int,
+    foreign key (animal) references animal(animal_id) on update cascade on delete cascade,
     -- visitor submits application
     visitor int,
     foreign key (visitor) references visitor(visitor_id) on update cascade on delete restrict,
@@ -174,7 +179,7 @@ create table animal_urgent_care (
     foreign key (uc_id) references urgent_care(uc_id) on update cascade on delete cascade
 );
 
--- appointment involves vaccine
+-- appointment involves vaccine (*..*)
 create table appoint_vaccine (
 	appointment int,
     vaccine int,
@@ -183,7 +188,7 @@ create table appoint_vaccine (
     foreign key (vaccine) references vaccine(vac_id) on update cascade on delete cascade
 );
 
--- staff vaccinates animal
+-- staff vaccinates animal (*..*)
 create table vaccinates (
 	animal int,
     staff int,
@@ -192,200 +197,5 @@ create table vaccinates (
     foreign key (staff) references staff(staff_id) on update cascade on delete cascade
 );
 
--- application is for an animal
-create table is_for (
-	animal int,
-    application int,
-    primary key(animal, application),
-    foreign key (animal) references animal(animal_id) on update cascade on delete restrict,
-    foreign key (application) references application(app_id) on update cascade on delete cascade
-);
 
--- Functionality
-
-
--- when an animal gets adopted, set its kennel to null
--- THIS ALSO DOESNT WORK
-delimiter $$
-create trigger empty_kennel
-	before update on animal for each row
-    begin 
-		if (new.adoption_status = "adopted") then
-			set new.kennel = null;
-        end if;
-    end $$
-delimiter ;
-
-UPDATE `animal_shelter`.`animal` SET `adoption_status` = 'adopted' WHERE (`animal_id` = 2);
-
--- when an application gets updated (status set to 'accepted') 
--- delimiter $$
--- create trigger set_animal_to_adopted
--- 	before update on application for each row
---     begin 
--- 		declare animal
---         set animal_to_update = (select * from animal where animal_id = 
--- 			(select animal from 
--- 			(select * from is_for where application = new.app_id)));
---         if (new.status = 'accepted') then
--- 			set animal_to_update.adoption_status = 'adopted';
---         end if;
---     end $$
-
--- delimiter ;
-	
-
--- Return all animals that aren't adopted
-delimiter $$
-create procedure see_shelter_animals()
-	begin 
-		select * from animal where adoption_status != 'adopted';
-    end $$
-delimiter ;
-
-call see_shelter_animals();
-Error Code: 1054. Unknown column 'animal_id' in 'field list'
-
--- Given animal's name, return its adoption status
-delimiter $$
-create procedure lookup_animal(in name_param varchar(64), in id_param int) 
-	begin 
-		if (id_param is not null) then
-			select * from animal where animal.animal_id = id_param;
-        else 
-			select * from animal where animal.name = name_param;
-        end if;
-    end $$
-delimiter ;
-
--- drop procedure lookup_animal;
-call lookup_animal("Paul", null);
-
--- Get the status of all applications
-delimiter $$
-create procedure check_all_app_status()
-	begin 
-		select * from application;
-    end $$
-delimiter ;
-
-call check_all_app_status();
-
--- Get the status of a certain application, specified by email
-delimiter $$
-create procedure lookup_app_status(in email_param varchar(64))
-	begin
-		select status, email_param as email from application 
-        join visitor on visitor = visitor_id
-		where email_param = visitor.email;
-    end $$
-delimiter ;
--- drop procedure lookup_app_status;
-call lookup_app_status("jroll@gmail.com");
-
-
--- Returns: number of animals (both in-shelter and adopted), number of kennels, 
--- 	number of in-shelter animals, and percentage of kennels filled 
-delimiter $$
-create procedure capacity_stats()
-	
-	begin 
-		declare animal_count int;
-        declare total_capacity int;
-        declare capacity_percent float;
-        declare animals_in_shelter int;
-        
-        select count(*) from animal into animal_count; -- number of animals
-        select count(*) from kennel into total_capacity; -- number of kennels
-        (select count(*) from animal where kennel is not null) into animals_in_shelter;
-        -- number of in-shelter animals divided by total capacity
-        select animals_in_shelter / total_capacity * 100 into capacity_percent;
-        select animal_count, total_capacity, animals_in_shelter, capacity_percent;
-    end $$
-delimiter ;
--- drop function capacity_stats;
-call capacity_stats();
-
-
--- Retrieve all animals who have no application submitted for them
-delimiter $$
-create procedure animals_with_no_app()
-	begin 
-		-- get everything from animal that isn't in is_for
-        select * from animal 
-        left join is_for on animal = animal_id
-        where animal_id not in (select animal from is_for);
-    end $$
-delimiter ;
--- drop procedure animals_with_no_app;
-call animals_with_no_app();
-
--- Given a name, dob, and address, add a new visitor and address
-delimiter $$
-create procedure new_visitor(in name_p varchar(64), in date_p date, in email_p varchar(64), 
-	in street_num_p int, in street_name_p varchar(64), in city_p varchar(32), in state_p char(2), in zip_p char(5))
-	begin 
-		-- first add to address table (if doens't already exist)
-        if ((street_num_p, street_name_p, city_p, state_p, zip_p) not in (select * from address)) then
-			insert into address values (street_num_p, street_name_p, city_p, state_p, zip_p);
-		end if;
-        -- then add to visitor table (if email doesn't already exist)
-        if ((email_p) not in (select email from visitor)) then
-			insert into visitor (name, date_of_birth, email, street_num, street_name, city, state, zipcode) values (name_p, date_p, email_p, street_num_p, street_name_p, city_p, state_p, zip_p);
-		else 
-			signal sqlstate '45000' set message_text = "This email is already in our database";
-		end if;
-    end $$
-delimiter ;
--- drop procedure new_visitor;
-call new_visitor("Beyonce", '1981-09-04', "bknowles@beyonce.com", "32", "Gainsborough Street", "Boston", "MA", 02115);
-
-
--- Add a new animal to the database
-delimiter $$
-create procedure new_animal(in name_p varchar(64), in dob_p date, in sex_p enum("F", "M"), 
-	in neutered_p tinyint(1), in intake_date_p date, in kennel_p int, in species_scientific_p varchar(128), 
-    in species_breed_p varchar(64))
-	begin
-		-- have to repeat code b/c MySQL won't let us select columns from a procedure call (select * from (call capacity_stats()))
-		declare animals_in_shelter int;
-        declare total_capacity int;
-		select count(*) from kennel into total_capacity; -- number of kennels
-        (select count(*) from animal where kennel is not null) into animals_in_shelter;
-        -- check if there is space available: if at capacity, give error and don't proceed
-        if (total_capacity = animals_in_shelter) then
-			signal sqlstate '45000' set message_text = "Kennels are at capacity";
-		else
-			-- check if species exists: if it is new, add it to table, add animal either way
-            if species_breed_p not in (select breed from species) then
-				insert into species (scientific_name, breed) values (species_scientific_p, species_breed_p);
-			end if;
-            -- if animal already exists: give error, else, insert
-            if (name_p, dob_p) in (select name, date_of_birth from animal) then
-				signal sqlstate '45000' set message_text = "Animal with same name and birthday already exists";
-			else 
-				insert into animal (name, date_of_birth, sex, neutered, adoption_status, intake_date, kennel, species)
-                values (name_p, dob_p, sex_p, neutered_p, 'shelter', intake_date_p, kennel_p, 
-					(select species_id from species where breed = species_breed_p));
-			end if;
-        end if;
-    end $$
--- need to add species if its new
--- need to make sure kennel isn't occupied
-delimiter ;
--- drop procedure new_animal;
-call new_animal("Spice", '1999-01-05', "F", 1, '2024-04-12', 13, "Canis lupus", "Husky");
-
--- Delete application
-delimiter $$
-create procedure rescind_application (in app_id_param int)
-begin 
-if app_id_param in (select app_id from application where status = "accepted" ) then
-	signal sqlstate '45000' set message_text = "Adoption has already been completed, cannot remove application";
-else
-	delete from application
-		where app_id_param = app_id;
-end if;
-end $$ 
-delimiter ; 
 

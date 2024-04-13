@@ -39,7 +39,7 @@ INSERT INTO `animal_shelter`.`kennel` (`width`, `depth`, `height`) VALUES ('64',
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Oats', '2022-04-21', 'M', '1', 'adopted', '2022-06-30', null, '1');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('George', '2019-03-17', 'F', '0', 'shelter', '2024-01-13', '6', '1');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Sandy', '2016-05-09', 'M', '1', 'adopted', '2024-01-01', null, '2');
-INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Ringo', '2020-03-14', 'F', '0', 'pending', '2021-12-19', '3', '4');
+INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Ringo', '2020-03-14', 'F', '0', 'shelter', '2021-12-19', '3', '4');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Paul', '2004-02-19', 'M', '1', 'shelter', '2023-07-07', '4', '6');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Fargo', '2003-06-21', 'F', '1', 'shelter', '2022-08-09', '12', '3');
 INSERT INTO `animal_shelter`.`animal` (`name`, `date_of_birth`, `sex`, `neutered`, `adoption_status`, `intake_date`, `kennel`, `species`) VALUES ('Jessica', '2024-01-01', 'M', '1', 'shelter', '2024-01-01', '15', '5');
@@ -58,13 +58,13 @@ INSERT INTO `animal_shelter`.`manager` (`m_name`, `hours_per_week`, `salary`, `u
 INSERT INTO `animal_shelter`.`urgent_care` (`reason`, `visit_date`, `diagnosis`, `prognosis`) VALUES ('Itching behind ear', '2024-04-04', 'Fleas', 'Bathe with special shampoo for 2 weeks');
 INSERT INTO `animal_shelter`.`urgent_care` (`reason`, `visit_date`, `diagnosis`, `prognosis`) VALUES ('Limping when walking', '2024-03-27', 'Broken leg', 'Cast, rest leg for 2 months');
 
-INSERT INTO `animal_shelter`.`visitor` (`name`, `email`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Kathleen Durant', 'k.durant@northesatern.edu', '360', 'Huntington Ave', 'Boston', 'MA', '02115');
-INSERT INTO `animal_shelter`.`visitor` (`name`, `email`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Jelly Roll', 'jroll@gmail.com', '10', 'Chandler Street', 'Boston', 'MA', '02116');
-INSERT INTO `animal_shelter`.`visitor` (`name`, `email`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Billie Eilish', 'beilish@yahoo.com', '6900', 'Darcy Lane', 'Raleigh', 'NC', '27606');
-INSERT INTO `animal_shelter`.`visitor` (`name`, `date_of_birth`, `email`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Elizabeth Dickey', '1970-07-04', 'bethd04@gmail.com', '7700', 'Centre Avenue', 'Pittsburgh', 'PA', '15232');
-INSERT INTO `animal_shelter`.`visitor` (`name`, `date_of_birth`, `email`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Keltin Grimes', '2001-02-06', 'keltin.grimes@gmail.com', '400', 'North Dithridge Street', 'Pittsburgh', 'PA', '15213');
-INSERT INTO `animal_shelter`.`visitor` (`name`, `date_of_birth`, `email`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Craig Grimes', '1956-09-06', 'craig.grimes40@gmail.com', '720', 'Darcy Lane', 'Raleigh', 'NC', '27606');
-INSERT INTO `animal_shelter`.`visitor` (`name`, `date_of_birth`, `email`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Dave Matthews', '1959-08-02', 'davematthewssucks@gmail.com', '89', 'Symphony Road', 'Boston', 'MA', '02115');
+INSERT INTO `animal_shelter`.`visitor` (`name`, `date_of_birth`, `email`, `v_password`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Kathleen Durant', '2000-06-05', 'k.durant@northesatern.edu', 'pswd1234', '360', 'Huntington Ave', 'Boston', 'MA', '02115');
+INSERT INTO `animal_shelter`.`visitor` (`name`, `date_of_birth`, `email`, `v_password`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Jelly Roll', '1982-04-04', 'jroll@gmail.com', 'jellyroll1', '10', 'Chandler Street', 'Boston', 'MA', '02116');
+INSERT INTO `animal_shelter`.`visitor` (`name`, `date_of_birth`, `email`, `v_password`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Billie Eilish', '2001-12-18', 'beilish@yahoo.com', 'badguyduh', '6900', 'Darcy Lane', 'Raleigh', 'NC', '27606');
+INSERT INTO `animal_shelter`.`visitor` (`name`, `date_of_birth`, `email`, `v_password`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Elizabeth Dickey', '1970-07-04', 'bethd04@gmail.com', 'kyrasmomheart', '7700', 'Centre Avenue', 'Pittsburgh', 'PA', '15232');
+INSERT INTO `animal_shelter`.`visitor` (`name`, `date_of_birth`, `email`, `v_password`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Keltin Grimes', '2001-02-06', 'keltin.grimes@gmail.com', 'kyrasbrother', '400', 'North Dithridge Street', 'Pittsburgh', 'PA', '15213');
+INSERT INTO `animal_shelter`.`visitor` (`name`, `date_of_birth`, `email`, `v_password`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Craig Grimes', '1956-09-06', 'craig.grimes40@gmail.com', 'horse111!', '720', 'Darcy Lane', 'Raleigh', 'NC', '27606');
+INSERT INTO `animal_shelter`.`visitor` (`name`, `date_of_birth`, `email`, `v_password`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Dave Matthews', '1959-08-02', 'davematthewssucks@gmail.com', 'dmsucksssss', '89', 'Symphony Road', 'Boston', 'MA', '02115');
 
 INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `approver_status`, `username`, `password`, `manager`) VALUES ('Caitlin Clark', '20', '0', '10', '1', 'cclark', 'iowa22', '1');
 INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `approver_status`, `username`, `password`, `manager`) VALUES ('Paige Bueckers', '15', '0', '10', '1','pbueckers', 'uconn5', '2');
@@ -96,8 +96,8 @@ INSERT INTO `animal_shelter`.`vaccinates` (`animal`, `staff`) VALUES ('4', '4');
 
 INSERT INTO `animal_shelter`.`appoint_vaccine` (`appointment`, `vaccine`) VALUES ('2', '3');
 
-INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `household_members`, `current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('Jelly Roll', '1984-12-04', '4', '2', 'singer', 'pending', '1', '2', '3');
-INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `household_members`, `current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('Billie Eilish', '2001-12-18', '1', '0', 'singer', 'accepted', '1', '3', '5');
-INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `household_members`, `current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('Kathleen Durant', '2001-12-18', '1', '0', 'professor', 'pending', '5', '1', '5');
+INSERT INTO `animal_shelter`.`application` (`household_members`, `current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('4', '2', 'singer', 'pending', '1', '2', '3');
+INSERT INTO `animal_shelter`.`application` (`household_members`, `current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('1', '0', 'singer', 'accepted', '1', '3', '5');
+INSERT INTO `animal_shelter`.`application` (`household_members`, `current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('1', '0', 'professor', 'pending', '5', '1', '5');
 
 

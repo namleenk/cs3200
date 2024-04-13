@@ -66,20 +66,17 @@ INSERT INTO `animal_shelter`.`visitor` (`name`, `date_of_birth`, `email`, `stree
 INSERT INTO `animal_shelter`.`visitor` (`name`, `date_of_birth`, `email`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Craig Grimes', '1956-09-06', 'craig.grimes40@gmail.com', '720', 'Darcy Lane', 'Raleigh', 'NC', '27606');
 INSERT INTO `animal_shelter`.`visitor` (`name`, `date_of_birth`, `email`, `street_num`, `street_name`, `city`, `state`, `zipcode`) VALUES ('Dave Matthews', '1959-08-02', 'davematthewssucks@gmail.com', '89', 'Symphony Road', 'Boston', 'MA', '02115');
 
-INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `username`, `password`, `manager`) VALUES ('Caitlin Clark', '20', '0', '10', 'cclark', 'iowa22', '1');
-INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `username`, `password`, `manager`) VALUES ('Paige Bueckers', '15', '0', '10', 'pbueckers', 'uconn5', '2');
-INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `username`, `password`, `manager`) VALUES ('Karmilla Cardoso', '30', '0', '15', 'kcardoso', 'sc10', '3');
-INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `username`, `password`, `manager`) VALUES ('Kate Martin', '40', '1', '20', 'kmartin', 'iowa20', '1');
-INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `username`, `password`, `manager`) VALUES ('Nika Muhl', '35', '1', '15', 'nmuhl', 'uconn10', '2');
-INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `username`, `password`, `manager`) VALUES ('Raven Johnson', '40', '1', '20', 'rjohnson', 'sc25', '3');
-INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `username`, `password`, `manager`) VALUES ('Juju Watkins', '15', '0', '10', 'jwatkins', 'usc12', '4');
+INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `approver_status`, `username`, `password`, `manager`) VALUES ('Caitlin Clark', '20', '0', '10', '1', 'cclark', 'iowa22', '1');
+INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `approver_status`, `username`, `password`, `manager`) VALUES ('Paige Bueckers', '15', '0', '10', '1','pbueckers', 'uconn5', '2');
+INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `approver_status`, `username`, `password`, `manager`) VALUES ('Karmilla Cardoso', '30', '0', '15', '1','kcardoso', 'sc10', '3');
+INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `approver_status`, `username`, `password`, `manager`) VALUES ('Kate Martin', '40', '1', '20', '0','kmartin', 'iowa20', '1');
+INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `approver_status`, `username`, `password`, `manager`) VALUES ('Nika Muhl', '35', '1', '15', '1','nmuhl', 'uconn10', '2');
+INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `approver_status`, `username`, `password`, `manager`) VALUES ('Raven Johnson', '40', '1', '20','0', 'rjohnson', 'sc25', '3');
+INSERT INTO `animal_shelter`.`staff` (`name`, `hours_per_week`, `full_time`, `salary`, `approver_status`, `username`, `password`, `manager`) VALUES ('Juju Watkins', '15', '0', '10','0', 'jwatkins', 'usc12', '4');
 
 INSERT INTO `animal_shelter`.`vet` (`vet_id`, `accepting_new`) VALUES ('4', '1');
 INSERT INTO `animal_shelter`.`vet` (`vet_id`, `accepting_new`) VALUES ('6', '0');
 INSERT INTO `animal_shelter`.`vet` (`vet_id`, `accepting_new`) VALUES ('7', '1');
-
-INSERT INTO `animal_shelter`.`approver` (`approver_id`) VALUES ('3');
-INSERT INTO `animal_shelter`.`approver` (`approver_id`) VALUES ('5');
 
 INSERT INTO `animal_shelter`.`vaccine` (`name`, `version`) VALUES ('Rabies vaccine', '1');
 INSERT INTO `animal_shelter`.`vaccine` (`name`, `version`) VALUES ('Lyme disease vaccine', '1');

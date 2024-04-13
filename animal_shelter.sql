@@ -98,12 +98,6 @@ create table vet (
     foreign key (vet_id) references staff(staff_id) on update cascade on delete restrict
 );
 
--- approver subclass for staff
-create table approver (
-	approver_id int auto_increment primary key,
-    foreign key (approver_id) references staff(staff_id) on update cascade on delete restrict
-);
-
 -- urgent care strong entity
 create table urgent_care (
 	uc_id int auto_increment primary key,
@@ -160,7 +154,7 @@ create table application (
     foreign key (visitor) references visitor(visitor_id) on update cascade on delete restrict,
     -- approver approves application
     approver int not null,
-    foreign key (approver) references approver(approver_id) on update cascade on delete restrict
+    foreign key (approver) references staff(staff_id) on update cascade on delete restrict
 );
 
 -- vaccine strong entity

@@ -168,12 +168,35 @@ create procedure new_animal(in name_p varchar(64), in dob_p date, in sex_p enum(
 			end if;
         end if;
     end $$
--- need to add species if its new
--- need to make sure kennel isn't occupied
 delimiter ;
 -- drop procedure new_animal;
 call new_animal("Spice", '1999-01-05', "F", 1, '2024-04-12', 13, "Canis lupus", "Husky");
-
+/*
 -- Delete staff (someone leaves or gets fired)
 -- procedure: takes in staff id or username
+delimiter $$
+create procedure remove_staff (in staff_id_p int, in username_p varchar(64))
+	begin
+		-- if the staff does not exist, we cannot delete it
+        -- if the staff is a vet, we cannot delete it
+        -- if the staff is an approver, we cannot delete it
+    end $$
+delimiter ;
 
+delimiter $$
+create trigger remove_staff
+	after delete on staff for each row
+	begin
+    -- if staff is a vet, approver, does not exist, cannot be removed
+		if ((old.staff_id not in (select staff_id from staff)) or (old.username not in (select username from staff))) then
+			signal sqlstate '45000' set message_text = "This staff does not exist, so it cannot be deleted";
+		else
+			delete from staff where staff_id = old.staff_id or username = old.username;
+		end if;
+	end $$
+delimiter ;
+-- drop trigger remove_staff;
+-- tests
+delete from staff where username = "lego"; -- should give error
+delete from staff where staff_id = 7; -- should remove Juju Watkins from staff table
+*/

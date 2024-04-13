@@ -168,10 +168,16 @@ create procedure new_animal(in name_p varchar(64), in dob_p date, in sex_p enum(
 			end if;
         end if;
     end $$
+<<<<<<< HEAD
+=======
+-- need to add species if its new
+-- need to make sure kennel isn't occupied
+>>>>>>> 86806ae (Refactored)
 delimiter ;
 -- drop procedure new_animal;
 call new_animal("Spice", '1999-01-05', "F", 1, '2024-04-12', 13, "Canis lupus", "Husky");
 
+<<<<<<< HEAD
 -- Deletes a staff member (if they get fired or leave), given either the staff's id and/or the staff's username
 delimiter $$
 create procedure remove_staff (in staff_id_p int, in username_p varchar(64))
@@ -196,3 +202,8 @@ delimiter ;
 -- test
 call remove_staff(1, null);
 call remove_staff(5, null); -- should give approver error message
+=======
+-- Delete staff (someone leaves or gets fired)
+-- procedure: takes in staff id or username
+
+>>>>>>> 86806ae (Refactored)

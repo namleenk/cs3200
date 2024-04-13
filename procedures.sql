@@ -96,42 +96,6 @@ delimiter ;
 -- test
 call capacity_stats();
 
-
--- Retrieve all animals who have no application submitted for them
--- delimiter $$
--- create procedure animals_with_no_app()
--- 	begin 
--- 		-- get everything from animal that isn't in is_for
---         select * from animal 
---         left join is_for on animal = animal_id
---         where animal_id not in (select animal from is_for);
---     end $$
--- delimiter ;
--- -- drop procedure animals_with_no_app;
--- call animals_with_no_app();
-
--- Given a name, dob, and address, add a new visitor and address
-delimiter $$
-create procedure new_visitor(in name_p varchar(64), in date_p date, in email_p varchar(64), 
-	in street_num_p int, in street_name_p varchar(64), in city_p varchar(32), in state_p char(2), in zip_p char(5))
-	begin 
-		-- first add to address table (if doens't already exist)
-        if ((street_num_p, street_name_p, city_p, state_p, zip_p) not in (select * from address)) then
-			insert into address values (street_num_p, street_name_p, city_p, state_p, zip_p);
-		end if;
-        -- then add to visitor table (if email doesn't already exist)
-        if ((email_p) not in (select email from visitor)) then
-			insert into visitor (name, date_of_birth, email, street_num, street_name, city, state, zipcode)
-				values (name_p, date_p, email_p, street_num_p, street_name_p, city_p, state_p, zip_p);
-		else 
-			signal sqlstate '45000' set message_text = "This email is already in our database";
-		end if;
-    end $$
-delimiter ;
--- test
-call new_visitor("Beyonce", '1981-09-04', "bknowles@beyonce.com", "32", "Gainsborough Street", "Boston", "MA", 02115);
-
-
 -- Add a new animal to the database
 delimiter $$
 create procedure new_animal(in name_p varchar(64), in dob_p date, in sex_p enum("F", "M"), 
@@ -166,31 +130,38 @@ delimiter ;
 call new_animal("Spice", '1999-01-05', "F", 1, '2024-04-12', 13, "Canis lupus", "Husky");
 
 
--- Deletes a staff member (if they get fired or leave), given either the staff's id and/or the staff's username
+-- Given an appt type, create the corresponding appointment (vaccination or checkup) for an animal
 delimiter $$
-create procedure remove_staff (in staff_id_p int, in username_p varchar(64))
+create procedure make_appt (in appt_type_p varchar(64), in notes_p varchar(256), in app_date_p date, in vet_p int, in animal_p int)
 	begin
-		-- if the staff does not exist, we cannot delete it
-        if ((staff_id_p not in (select staff_id from staff)) or (username_p not in (select username from staff)))
-			then signal sqlstate '45000' set message_text = "This staff does not exist so it cannot be deleted";
+		
+    end $$
+delimiter ;
+
+-- to be used for the NEW VISITOR VIEW
+-- Given a name, dob, and address, add a new visitor and address
+delimiter $$
+create procedure new_visitor(in name_p varchar(64), in date_p date, in email_p varchar(64), 
+	in street_num_p int, in street_name_p varchar(64), in city_p varchar(32), in state_p char(2), in zip_p char(5))
+	begin 
+		-- first add to address table (if doens't already exist)
+        if ((street_num_p, street_name_p, city_p, state_p, zip_p) not in (select * from address)) then
+			insert into address values (street_num_p, street_name_p, city_p, state_p, zip_p);
 		end if;
-        -- if the staff is a vet, we cannot delete it
-        if (staff_id_p in (select vet_id from vet)) then
-			signal sqlstate '45000' set message_text = "Vets cannot be deleted";
+        -- then add to visitor table (if email doesn't already exist)
+        if ((email_p) not in (select email from visitor)) then
+			insert into visitor (name, date_of_birth, email, street_num, street_name, city, state, zipcode)
+				values (name_p, date_p, email_p, street_num_p, street_name_p, city_p, state_p, zip_p);
+		else 
+			signal sqlstate '45000' set message_text = "This email is already in our database";
 		end if;
-        -- if the staff is a approver of an application, we cannot delete it
-        if (staff_id_p in (select approver from application)) then
-			signal sqlstate '45000' set message_text = "Application approvers cannot be deleted";
-        end if;
-        -- delete the staff from the table
-        delete from staff where staff_id = staff_id_p or username = username_p;
     end $$
 delimiter ;
 -- test
-call remove_staff(1, null);
-call remove_staff(5, null); -- should give approver error message
+call new_visitor("Beyonce", '1981-09-04', "bknowles@beyonce.com", "32", "Gainsborough Street", "Boston", "MA", 02115);
 
--- to be used for the VISITOR VIEW
+
+-- to be used for the RETURNING VISITOR VIEW
 
 -- Given the visitor's email, return the status of their application(s)
 delimiter $$
@@ -229,6 +200,10 @@ call animals_with_no_app();
 delimiter $$
 create procedure longest_shelter_length(in species_p varchar(64))
 	begin
+    -- check if species does not exist
+    if (species_p not in (select scientific_name from species)) then
+		signal sqlstate '45000' set message_text = "There currently are no animals of this species";
+	end if;
 	select * from animal
 		left outer join species on animal.species = species.species_id
         where species_p = species.scientific_name and animal.adoption_status != "adopted" order by intake_date asc;
@@ -282,3 +257,41 @@ approver_status_p bool, username_p varchar(64), password_p varchar(64), manager_
 delimiter ;
 -- test
 call add_staff("Sue Bird", 35, True, 20, True, "suebird3", "MeganRapinoe3", 3);
+
+
+-- Deletes a staff member (if they get fired or leave), given either the staff's id and/or the staff's username
+delimiter $$
+create procedure remove_staff (in staff_id_p int, in username_p varchar(64))
+	begin
+		-- if the staff does not exist, we cannot delete it
+        if ((staff_id_p not in (select staff_id from staff)) or (username_p not in (select username from staff)))
+			then signal sqlstate '45000' set message_text = "This staff does not exist so it cannot be deleted";
+		end if;
+        -- if the staff is a vet, we cannot delete it
+        if (staff_id_p in (select vet_id from vet)) then
+			signal sqlstate '45000' set message_text = "Vets cannot be deleted";
+		end if;
+        -- if the staff is a approver of an application, we cannot delete it
+        if (staff_id_p in (select approver from application)) then
+			signal sqlstate '45000' set message_text = "Application approvers cannot be deleted";
+        end if;
+        -- delete the staff from the table
+        delete from staff where staff_id = staff_id_p or username = username_p;
+    end $$
+delimiter ;
+-- test
+call remove_staff(1, null);
+call remove_staff(5, null); -- should give approver error message
+
+-- Given an animal's id, remove it (in case it passes away)
+delimiter $$
+create procedure remove_animal (in animal_id_p int)
+	begin
+		-- check if animal exists
+        if (animal_id_p not in (select animal_id from animal)) then
+			signal sqlstate '45000' set message_text = "This animal does not exist";
+		end if;
+        delete from animal where animal_id = animal_id_p;
+    end $$
+delimiter ;
+call remove_animal(3);

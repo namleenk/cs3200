@@ -4,12 +4,10 @@ use animal_shelter;
 -- when an animal gets adopted, set its kennel to null
 delimiter $$
 create trigger empty_kennel
-	before update on animal for each row
-    begin 
-		if (new.adoption_status = "adopted") then
-			set new.kennel = null;
-        end if;
-    end $$
+	before update on animal
+	if (new.adoption_status = "adopted") then
+		set new.kennel = null;
+	end if;
 delimiter ;
 -- test
 UPDATE `animal_shelter`.`animal` SET `adoption_status` = 'adopted' WHERE (`animal_id` = 2);
@@ -18,10 +16,24 @@ UPDATE `animal_shelter`.`animal` SET `adoption_status` = 'adopted' WHERE (`anima
 -- 'accepted' ==> update animal's status to adopted
 delimiter $$
 create trigger on_application_update
-	before update on application
+	before update on application for each row
+    begin
+		call adopt_animal(new.animal);
+    end $$
+drop on_application_update;
+delimiter ;
+UPDATE `animal_shelter`.`application` SET `status` = 'accepted' WHERE (`app_id` = '5');
 
+-- helper procedure: updates an animal's status to adopted
+delimiter $$
+create procedure adopt_animal(in id_p int)
+	begin
+		update animal set adoption_status = 'adopted' where animal_id = id_p;
+    end $$
 delimiter ;
 
+-- drop procedure adopt_animal;
+call adopt_animal(4);
 -- When a new application gets added, change that animal's status to 'pending'
 delimiter $$
 create trigger on_application_add

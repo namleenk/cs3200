@@ -14,32 +14,26 @@ UPDATE `animal_shelter`.`animal` SET `adoption_status` = 'adopted' WHERE (`anima
 
 -- when an application gets updated trigger
 -- 'accepted' ==> update animal's status to adopted
+-- NOT WORKING FOR SOME REASON
 delimiter $$
 create trigger on_application_update
-	before update on application for each row
-    begin
-		call adopt_animal(new.animal);
-    end $$
-drop on_application_update;
+	before update on application
+	update animal set adoption_status = 'adopted' where animal_id = new.animal;
+-- drop on_application_update;
 delimiter ;
 UPDATE `animal_shelter`.`application` SET `status` = 'accepted' WHERE (`app_id` = '5');
 
--- helper procedure: updates an animal's status to adopted
-delimiter $$
-create procedure adopt_animal(in id_p int)
-	begin
-		update animal set adoption_status = 'adopted' where animal_id = id_p;
-    end $$
-delimiter ;
 
--- drop procedure adopt_animal;
-call adopt_animal(4);
 -- When a new application gets added, change that animal's status to 'pending'
 delimiter $$
 create trigger on_application_add
 	before insert on application
+    update animal set adoption_status = 'pending' where animal_id = new.animal;
 delimiter ;
-	
+drop trigger on_application_add;
+INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `household_members`, 
+`current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('Dave Matthews', 
+'1959-08-02', '1', '0', 'singer', 'pending', '6', '7', '5');
 
 -- Return all animals that aren't adopted
 delimiter $$
@@ -50,7 +44,6 @@ create procedure see_shelter_animals()
 delimiter ;
 
 call see_shelter_animals();
-Error Code: 1054. Unknown column 'animal_id' in 'field list'
 
 -- Given animal's name, return its adoption status
 delimiter $$
@@ -94,7 +87,6 @@ call lookup_app_status("jroll@gmail.com");
 -- 	number of in-shelter animals, and percentage of kennels filled 
 delimiter $$
 create procedure capacity_stats()
-	
 	begin 
 		declare animal_count int;
         declare total_capacity int;
@@ -180,16 +172,11 @@ create procedure new_animal(in name_p varchar(64), in dob_p date, in sex_p enum(
 			end if;
         end if;
     end $$
-<<<<<<< HEAD
-=======
--- need to add species if its new
--- need to make sure kennel isn't occupied
->>>>>>> 86806ae (Refactored)
 delimiter ;
 -- drop procedure new_animal;
 call new_animal("Spice", '1999-01-05', "F", 1, '2024-04-12', 13, "Canis lupus", "Husky");
 
-<<<<<<< HEAD
+
 -- Deletes a staff member (if they get fired or leave), given either the staff's id and/or the staff's username
 delimiter $$
 create procedure remove_staff (in staff_id_p int, in username_p varchar(64))
@@ -214,8 +201,3 @@ delimiter ;
 -- test
 call remove_staff(1, null);
 call remove_staff(5, null); -- should give approver error message
-=======
--- Delete staff (someone leaves or gets fired)
--- procedure: takes in staff id or username
-
->>>>>>> 86806ae (Refactored)

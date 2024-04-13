@@ -4,10 +4,12 @@ use animal_shelter;
 -- when an animal gets adopted, set its kennel to null
 delimiter $$
 create trigger empty_kennel
-	before update on animal
-	if (new.adoption_status = "adopted") then
-		set new.kennel = null;
-	end if;
+	before update on animal for each row
+    begin
+		if (new.adoption_status = "adopted") then
+			set new.kennel = null;
+		end if;
+	end $$
 delimiter ;
 -- test
 UPDATE `animal_shelter`.`animal` SET `adoption_status` = 'adopted' WHERE (`animal_id` = 2);
@@ -16,21 +18,24 @@ UPDATE `animal_shelter`.`animal` SET `adoption_status` = 'adopted' WHERE (`anima
 -- 'accepted' ==> update animal's status to adopted
 delimiter $$
 create trigger on_application_update
-	before update on application
-	update animal set adoption_status = 'adopted' where animal_id = new.animal;
+	before update on application for each row
+    begin
+		update animal set adoption_status = 'adopted' where animal_id = new.animal;
+    end $$
 drop on_application_update;
 delimiter ;
 UPDATE `animal_shelter`.`application` SET `status` = 'accepted' WHERE (`app_id` = '5');
 
 
--- When a new application gets added, change that animal's status to 'pending'
--- NOT WORKING FOR SOME REASON 	
+-- When a new application gets added, change the corresponding animal's status to 'pending'
 delimiter $$
 create trigger on_application_add
-	after insert on application
-    update animal set adoption_status = 'pending' where animal_id = new.animal;
+	after insert on application for each row
+    begin
+		update animal set adoption_status = 'pending' where animal_id = new.animal;
+	end $$
 delimiter ;
-drop trigger on_application_add;
+-- test
 INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `household_members`, 
 `current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('Dave Matthews', 
 '1959-08-02', '1', '0', 'singer', 'pending', '6', '7', '5');
@@ -42,7 +47,7 @@ create procedure see_shelter_animals()
 		select * from animal where adoption_status != 'adopted';
     end $$
 delimiter ;
-
+-- test
 call see_shelter_animals();
 
 -- Given animal's name, return its adoption status
@@ -56,8 +61,7 @@ create procedure lookup_animal(in name_param varchar(64), in id_param int)
         end if;
     end $$
 delimiter ;
-
--- drop procedure lookup_animal;
+-- test
 call lookup_animal("Paul", null);
 
 -- Get the status of all applications
@@ -67,7 +71,7 @@ create procedure check_all_app_status()
 		select * from application;
     end $$
 delimiter ;
-
+-- test
 call check_all_app_status();
 
 -- Get the status of a certain application, specified by email
@@ -79,7 +83,7 @@ create procedure lookup_app_status(in email_param varchar(64))
 		where email_param = visitor.email;
     end $$
 delimiter ;
--- drop procedure lookup_app_status;
+-- test
 call lookup_app_status("jroll@gmail.com");
 
 
@@ -105,7 +109,7 @@ create procedure capacity_stats()
 		end if;
     end $$
 delimiter ;
--- drop function capacity_stats;
+-- test
 call capacity_stats();
 
 
@@ -139,7 +143,7 @@ create procedure new_visitor(in name_p varchar(64), in date_p date, in email_p v
 		end if;
     end $$
 delimiter ;
--- drop procedure new_visitor;
+-- test
 call new_visitor("Beyonce", '1981-09-04', "bknowles@beyonce.com", "32", "Gainsborough Street", "Boston", "MA", 02115);
 
 
@@ -173,7 +177,7 @@ create procedure new_animal(in name_p varchar(64), in dob_p date, in sex_p enum(
         end if;
     end $$
 delimiter ;
--- drop procedure new_animal;
+-- test
 call new_animal("Spice", '1999-01-05', "F", 1, '2024-04-12', 13, "Canis lupus", "Husky");
 
 
@@ -197,7 +201,6 @@ create procedure remove_staff (in staff_id_p int, in username_p varchar(64))
         delete from staff where staff_id = staff_id_p or username = username_p;
     end $$
 delimiter ;
--- drop procedure remove_staff;
 -- test
 call remove_staff(1, null);
 call remove_staff(5, null); -- should give approver error message

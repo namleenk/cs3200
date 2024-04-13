@@ -26,13 +26,11 @@ UPDATE `animal_shelter`.`application` SET `status` = 'accepted' WHERE (`app_id` 
 -- When a new application gets added, change the corresponding animal's status to 'pending'
 delimiter $$
 create trigger on_application_add
-	after insert on application for each row
-    begin
+	after insert on application
 		update animal set adoption_status = 'pending' where animal_id = new.animal;
-	end $$
 delimiter ;
 -- test
-INSERT INTO `animal_shelter`.`application` (`applicant_name`, `date_of_birth`, `household_members`, 
+INSERT INTO `animal_shelter`.`application` (`household_members`, 
 `current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('Dave Matthews', 
 '1959-08-02', '1', '0', 'singer', 'pending', '6', '7', '5');
 
@@ -59,16 +57,6 @@ create procedure lookup_animal(in name_param varchar(64), in id_param int)
 delimiter ;
 -- test
 call lookup_animal("Paul", null);
-
--- Get the status of all applications
-delimiter $$
-create procedure check_all_app_status()
-	begin 
-		select * from application;
-    end $$
-delimiter ;
--- test
-call check_all_app_status();
 
 -- Get the status of a certain application, specified by email
 delimiter $$
@@ -133,7 +121,8 @@ create procedure new_visitor(in name_p varchar(64), in date_p date, in email_p v
 		end if;
         -- then add to visitor table (if email doesn't already exist)
         if ((email_p) not in (select email from visitor)) then
-			insert into visitor (name, date_of_birth, email, street_num, street_name, city, state, zipcode) values (name_p, date_p, email_p, street_num_p, street_name_p, city_p, state_p, zip_p);
+			insert into visitor (name, date_of_birth, email, street_num, street_name, city, state, zipcode)
+				values (name_p, date_p, email_p, street_num_p, street_name_p, city_p, state_p, zip_p);
 		else 
 			signal sqlstate '45000' set message_text = "This email is already in our database";
 		end if;
@@ -200,3 +189,96 @@ delimiter ;
 -- test
 call remove_staff(1, null);
 call remove_staff(5, null); -- should give approver error message
+
+-- to be used for the VISITOR VIEW
+
+-- Given the visitor's email, return the status of their application(s)
+delimiter $$
+create procedure check_app_status (in email_p varchar(64))
+	begin
+		declare vid int;
+        
+		-- check if the visitor exists
+		if (email_p not in (select email from visitor)) then
+			signal sqlstate '45000' set message_text = "This visitor does not exist";
+		end if;
+        -- check if an application exists for the given visitor
+		select visitor_id into vid from (select visitor_id from visitor where email = email_p) as v;
+        if (vid not in (select visitor from application)) then
+			signal sqlstate '45000' set message_text = "This visitor has not submitted an application to adopt an animal";
+		end if;
+        -- return the application status
+        select status from application where visitor = vid;
+    end $$
+delimiter ;
+-- test
+call check_app_status("jroll@gmail.com");
+call check_app_status("k.durant@northesatern.edu"); -- should give error b/c visitor does not have an app
+
+-- Retrieve all animals who have no application submitted for them
+delimiter $$
+create procedure animals_with_no_app()
+	begin 
+		select * from animal where animal_id not in (select animal from application);
+	end $$
+delimiter ;
+-- drop procedure animals_with_no_app;
+call animals_with_no_app();
+
+-- View animals who have been in shelter longest by species
+delimiter $$
+create procedure longest_shelter_length(in species_p varchar(64))
+	begin
+	select * from animal
+		left outer join species on animal.species = species.species_id
+        where species_p = species.scientific_name and animal.adoption_status != "adopted" order by intake_date asc;
+end $$
+delimiter ;
+-- test
+call longest_shelter_length("Felis catus")
+
+-- create: submit an application
+delimiter $$
+create procedure submit_app (in email_p varchar(64), in household_members_p int, in current_pets_p int,
+	in occupation_p varchar(64), in animal_p int)
+	begin
+		declare vid int;
+		-- check that the visitor exists
+		if (email_p not in (select email from visitor)) then
+			signal sqlstate '45000' set message_text = "This visitor does not exist yet. PLease register with a staff member";
+		end if;
+		select visitor_id into vid from visitor where email = email_p;
+		insert into application (household_members, current_pets, occupation, status, animal, visitor, approver) values
+			(household_members_p, current_pets_p, occupation_p, 'pending', animal_p, vid, null);
+    end $$
+delimiter ;
+-- test
+call submit_app ("davematthewssucks@gmail.com", 1, 0, "singer", 8);
+call submit_app ("prezaoun@northeastern.edu", 2, 3, "university president", 9); -- should give an error
+
+delimiter $$
+create procedure update_address(in email_p varchar(64), in street_num_p int, in street_name_p varchar(64), 
+	in city_p varchar(32), in state_p char(2), in zip_p char(5))
+	begin 
+    -- first add to address table (if doens't already exist)
+	if ((street_num_p, street_name_p, city_p, state_p, zip_p) not in (select * from address)) then
+		insert into address values (street_num_p, street_name_p, city_p, state_p, zip_p);
+	end if;
+	update visitor set street_num = street_num_p, street_name = street_name_p, city = city_p, state = state_p, zipcode = zip_p
+		where email_p = visitor.email;
+	end $$
+delimiter ; 
+-- test
+call update_address("k.durant@northesatern.edu", 420, "America Lane", "Houston", "TX", "77001");
+
+-- to be used for MANAGER VIEW
+delimiter $$
+create procedure add_staff(in name_p varchar(64), hours_per_week_p int, full_time_p bool, salary_p int, 
+approver_status_p bool, username_p varchar(64), password_p varchar(64), manager_p int)
+	begin
+		insert into staff (name, hours_per_week, full_time, salary, approver_status, username, password, manager)
+			values (name_p, hours_per_week_p, full_time_p, salary_p, approver_status_p, username_p, password_p, manager_p);
+	end $$
+delimiter ;
+-- test
+call add_staff("Sue Bird", 35, True, 20, True, "suebird3", "MeganRapinoe3", 3);

@@ -16,9 +16,10 @@ create table address (
 create table visitor (
 	visitor_id int auto_increment primary key,
     name varchar(64) not null,
-    date_of_birth date,
+    date_of_birth date not null,
     -- email is an AK
-    email varchar(64) unique,
+    email varchar(64) unique not null,
+    v_password varchar(64) not null,
     -- visitor lives at address
     street_num int not null,
     street_name varchar(64) not null,
@@ -151,7 +152,7 @@ create table application (
     visitor int,
     foreign key (visitor) references visitor(visitor_id) on update cascade on delete restrict,
     -- approver approves application
-    approver int not null,
+    approver int,
     foreign key (approver) references staff(staff_id) on update cascade on delete restrict
 );
 
@@ -188,6 +189,3 @@ create table vaccinates (
     foreign key (animal) references animal(animal_id) on update cascade on delete cascade,
     foreign key (staff) references staff(staff_id) on update cascade on delete cascade
 );
-
-
-

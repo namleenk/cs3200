@@ -171,32 +171,28 @@ create procedure new_animal(in name_p varchar(64), in dob_p date, in sex_p enum(
 delimiter ;
 -- drop procedure new_animal;
 call new_animal("Spice", '1999-01-05', "F", 1, '2024-04-12', 13, "Canis lupus", "Husky");
-/*
--- Delete staff (someone leaves or gets fired)
--- procedure: takes in staff id or username
+
+-- Deletes a staff member (if they get fired or leave), given either the staff's id and/or the staff's username
 delimiter $$
 create procedure remove_staff (in staff_id_p int, in username_p varchar(64))
 	begin
 		-- if the staff does not exist, we cannot delete it
+        if ((staff_id_p not in (select staff_id from staff)) or (username_p not in (select username from staff)))
+			then signal sqlstate '45000' set message_text = "This staff does not exist so it cannot be deleted";
+		end if;
         -- if the staff is a vet, we cannot delete it
-        -- if the staff is an approver, we cannot delete it
+        if (staff_id_p in (select vet_id from vet)) then
+			signal sqlstate '45000' set message_text = "Vets cannot be deleted";
+		end if;
+        -- if the staff is a approver of an application, we cannot delete it
+        if (staff_id_p in (select approver from application)) then
+			signal sqlstate '45000' set message_text = "Application approvers cannot be deleted";
+        end if;
+        -- delete the staff from the table
+        delete from staff where staff_id = staff_id_p or username = username_p;
     end $$
 delimiter ;
-
-delimiter $$
-create trigger remove_staff
-	after delete on staff for each row
-	begin
-    -- if staff is a vet, approver, does not exist, cannot be removed
-		if ((old.staff_id not in (select staff_id from staff)) or (old.username not in (select username from staff))) then
-			signal sqlstate '45000' set message_text = "This staff does not exist, so it cannot be deleted";
-		else
-			delete from staff where staff_id = old.staff_id or username = old.username;
-		end if;
-	end $$
-delimiter ;
--- drop trigger remove_staff;
--- tests
-delete from staff where username = "lego"; -- should give error
-delete from staff where staff_id = 7; -- should remove Juju Watkins from staff table
-*/
+-- drop procedure remove_staff;
+-- test
+call remove_staff(1, null);
+call remove_staff(5, null); -- should give approver error message

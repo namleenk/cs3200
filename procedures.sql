@@ -14,20 +14,20 @@ UPDATE `animal_shelter`.`animal` SET `adoption_status` = 'adopted' WHERE (`anima
 
 -- when an application gets updated trigger
 -- 'accepted' ==> update animal's status to adopted
--- NOT WORKING FOR SOME REASON
 delimiter $$
 create trigger on_application_update
 	before update on application
 	update animal set adoption_status = 'adopted' where animal_id = new.animal;
--- drop on_application_update;
+drop on_application_update;
 delimiter ;
 UPDATE `animal_shelter`.`application` SET `status` = 'accepted' WHERE (`app_id` = '5');
 
 
 -- When a new application gets added, change that animal's status to 'pending'
+-- NOT WORKING FOR SOME REASON 	
 delimiter $$
 create trigger on_application_add
-	before insert on application
+	after insert on application
     update animal set adoption_status = 'pending' where animal_id = new.animal;
 delimiter ;
 drop trigger on_application_add;

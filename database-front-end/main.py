@@ -35,8 +35,9 @@ def run():
             all_manager_usernames = [list(x.values())[0] for x in all_managers]
 
             is_manager = username in all_manager_usernames
-            print(all_managers, is_manager)
-
+            # only if the user is manager, they can see all staffs' login information
+            if (is_manager):
+                print(all_managers, is_manager)
         # VISITOR VIEW (RETURNING)
         elif view_type == "returning":
             successful_login = True
@@ -47,12 +48,38 @@ def run():
         # NEW VISITOR VIEW
         elif view_type == "new":
             successful_login = True
-            pass
+            print("Please provide your name, date of birth, email, a new password, and address." +
+                    "Your address must consist of a street number, street name, city, state abbreviation, and zip code")
+            new_name = input("Name:\t")
+            new_dob = input("Date of birth (YYYY-MM-DD):\t")
+            new_email = input("Email:\t")
+            new_pswd = input("New password: \t")
+            new_street_num = input("Street number: \t")
+            new_street_name = input("Street name: \t")
+            new_city = input("City: \t")
+            state_len = True
+            # handle incorrect state input length
+            while (state_len):
+                new_state = input("State (abbrev to 2 characters): \t")
+                state_len = False
+            zipcode_len = True
+            # handle incorrect zipcode input length
+            while (zipcode_len):
+                new_zipcode = input("Zipcode (must be 5 characters): \t")
+                zipcode_len = False
+            # call the procedure new visitor to create a new visitor with the inputted credentials
+            try:
+                # THIS DOES NOT WORK YET - I think it might be because the data types between the input (which is a string) and the new_visitor procedure don't match
+                cursor.callproc("new_visitor", (new_name, new_dob, new_email, new_pswd, int(new_street_num), new_street_name, new_city, new_state, new_zipcode))
+            except pymysql.Error as e:
+                code, msg = e.args
+                print("Error calling new_visitor procedure", code, msg)
             # if information is all there
             print("Your account has been successfully created. Please log out and log in as a returning visitor.")
 
         else:
             print("\nDid not recognize that type of login. Please retry")
+
 
 
 if __name__ == '__main__':

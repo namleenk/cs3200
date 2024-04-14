@@ -224,7 +224,7 @@ delimiter ;
 -- to be used for the NEW VISITOR VIEW
 -- Given a name, dob, and address, add a new visitor and address
 delimiter $$
-create procedure new_visitor(in name_p varchar(64), in date_p date, in email_p varchar(64), in v_password_p varchar(64),
+create procedure new_visitor (in name_p varchar(64), in date_p date, in email_p varchar(64), in v_password_p varchar(64),
 	in street_num_p int, in street_name_p varchar(64), in city_p varchar(32), in state_p char(2), in zip_p char(5))
 	begin 
 		-- first add to address table (if doens't already exist)
@@ -242,7 +242,6 @@ create procedure new_visitor(in name_p varchar(64), in date_p date, in email_p v
 delimiter ;
 -- test
 call new_visitor("Beyonce", '1981-09-04', "bknowles@beyonce.com", "bhive", "32", "Gainsborough Street", "Boston", "MA", 02115);
-
 
 -- to be used for the RETURNING VISITOR VIEW
 

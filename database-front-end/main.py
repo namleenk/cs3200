@@ -172,6 +172,70 @@ def run():
             # if make_appt --> prompt for appt type, notes, appt date, vet, animal
                 # if vaccine --> prompt for vaccine name, vaccine version, and vaccine serial number
                 # call make_appt
+            elif (staff_action == "make_appt"):
+                print("Which type of appointment would you like to create (check up or vaccination)?")
+                valid_appt_type = False
+                while (not valid_appt_type):
+                    appt_type = input("check up or vaccination:\t")
+                    if (appt_type == "check up"):
+                        valid_appt_type = True
+                        # prompt for check up inputs
+                        print("Please enter the appointment notes, date, vet, and animal")
+                        appt_notes = input("Notes:\t")
+                        
+                        # handle appt date formatting
+                        appt_date_format = False
+                        while (not appt_date_format):
+                            appt_date = input("Appointment date (YYYY-MM-DD):\t")
+                            try:
+                                datetime.strptime (appt_date, "%Y-%m-%d").date()
+                                appt_date = datetime.strptime (appt_date, "%Y-%m-%d").date()
+                                appt_date_format = True
+                            except ValueError:
+                                print("Please make sure date is entered in the format YYYY-MM-DD")
+                        appt_vet = input("Vet ID:\t")
+                        appt_animal = input("Animal ID:\t")
+
+                        try:
+                            cursor.callproc("make_appt", ("check up", appt_notes, appt_date, appt_vet, appt_animal, None, None, None))
+                            connection.commit()
+                            print("Appointment created!")
+                        except pymysql.Error as e:
+                            code, msg = e.args
+                            print(msg)
+                    elif (appt_type == "vaccination"):
+                        valid_appt_type = True
+                        #prompt for vaccination inputs
+                        print("Please enter the appointment notes, date, vet, animal, vaccine name, vaccine version, and vaccine serial number")
+                        appt_notes = input("Notes:\t")
+                        
+                        # handle appt date formatting
+                        appt_date_format = False
+                        while (not appt_date_format):
+                            appt_date = input("Appointment date (YYYY-MM-DD):\t")
+                            try:
+                                datetime.strptime (appt_date, "%Y-%m-%d").date()
+                                appt_date = datetime.strptime (appt_date, "%Y-%m-%d").date()
+                                appt_date_format = True
+                            except ValueError:
+                                print("Please make sure date is entered in the format YYYY-MM-DD")
+
+                        appt_vet = input("Vet ID:\t")
+                        appt_animal = input("Animal ID:\t")
+                        appt_vaccine_name = input("Vaccine name:\t")
+                        appt_vaccine_version = input("Vaccine version:\t")
+                        appt_vaccine_serial_no = input("Vaccine serial number:\t")
+
+                        try:
+                            cursor.callproc("make_appt", ("check up", appt_notes, appt_date, appt_vet, appt_animal, appt_vaccine_name, appt_vaccine_version, appt_vaccine_serial_no))
+                            connection.commit()
+                            print("Appointment created!")
+                        except pymysql.Error as e:
+                            code, msg = e.args
+                            print(msg)
+                    else:
+                        print("Appointments can only be check up or vaccination")
+            
                 
         # VISITOR VIEW (RETURNING)
         elif view_type == "returning":

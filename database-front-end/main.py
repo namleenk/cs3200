@@ -3,7 +3,18 @@ from datetime import datetime
 import pymysql
 from pymysql import cursors
 
-
+# prints the list of actions a staff can do
+def staff_action_options():
+    # show the staff user what they can do
+    print("As a staff member you can do the following:\n" +
+            "1. See all shelter animals (see_shelter_animals)\n" +
+            "2. Look up an animal's adoption status (look_up_animal)\n" +
+            "3. Look at a visitor's application status (see_app_status)\n" +
+            "4. Look at shelter statistics (see_stats)\n" +
+            "5. Add a new animal to the shelter (add_new_animal)\n" +
+            "6. Make a new appointment for an animal (make_appt)\n" +
+            "\nSimply type the shorthand in parathesis of the action you want to do and you will get further instructions")
+    
 def run():
     # creating connection
     db_username = input("Please enter a username:\t")
@@ -11,6 +22,7 @@ def run():
     try:
         connection = pymysql.connect(host='localhost', user=db_username, password=db_password,
                                      db='animal_shelter', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+        global cursor
         cursor = connection.cursor()
         print('Connection successful')
     except BaseException:
@@ -39,6 +51,47 @@ def run():
             # only if the user is manager, they can see all staffs' login information
             if (is_manager):
                 print(all_managers, is_manager)
+            
+            # present the user with the action options
+            staff_action_options()
+            staff_action = input("Pick an action to do:\t")
+            
+            # handle staff action
+            
+            #if see shelter animal --> call procedure see_shelter_animals(), no input needed
+            if (staff_action == "see_shelter_animals"):
+                cursor.callproc("see_shelter_animals")
+                all_shelter_animals = cursor.fetchall()
+                for row in all_shelter_animals:
+                    print(row)
+
+            # if look up animal --> prompt for animal name or animal id, call lookup_animal with either input
+            elif (staff_action == "look_up_animal"):
+                print ("Please enter the animal's name and id. If you don't know one of them, just hit enter")
+                animal_name = input("Animal name:\t")
+                animal_id = input("Animal id:\t")
+
+                try:
+                    cursor.callproc("lookup_animal", (animal_name, animal_id))
+                    print(cursor.fetchall())
+                except pymysql.Error as e:
+                    code, msg = e.args
+                    print(msg)
+
+            # if see app status --> prompt for their email, call lookup_app_status with email or give error that no app exists
+            # if see_stats --> call capacity_stats, no input needed
+            elif (staff_action == "see_stats"):
+                cursor.callproc("capacity_stats")
+                all_shelter_animals = cursor.fetchall()
+                for row in all_shelter_animals:
+                    print(row)
+
+            # if add_new_animal --> prompt for anima's name, dob, sex, neutered, intake date, kennel, species, breed
+                # call new_animal with given input or give error that animal already exists
+            # if make_appt --> prompt for appt type, notes, appt date, vet, animal
+                # if vaccine --> prompt for vaccine name, vaccine version, and vaccine serial number
+                # call make_appt
+                
         # VISITOR VIEW (RETURNING)
         elif view_type == "returning":
             successful_login = True
@@ -90,7 +143,8 @@ def run():
 
             # call the procedure new visitor to create a new visitor with the inputted credentials
             try:
-                cursor.callproc("new_visitor", (new_name, new_dob, new_email, new_pswd, int(new_street_num), new_street_name, new_city, new_state, new_zipcode))
+                cursor.callproc("new_visitor", (new_name, new_dob, new_email, new_pswd, int(new_street_num),
+                                                new_street_name, new_city, new_state, new_zipcode))
                 # commit() actually makes the changes to the backend database
                 connection.commit()
             except pymysql.Error as e:

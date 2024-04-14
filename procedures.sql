@@ -49,8 +49,15 @@ delimiter $$
 create procedure lookup_animal(in name_param varchar(64), in id_param int) 
 	begin 
 		if (id_param is not null) then
-			select * from animal where animal.animal_id = id_param;
-        else 
+			if (id_param not in (select animal_id from animal)) then
+				signal sqlstate '45000' set message_text = "This animal does not exist";
+			else
+				select * from animal where animal.animal_id = id_param;
+			end if;
+        else
+			if (name_param not in (select name from animal)) then
+				signal sqlstate '45000' set message_text = "This animal does not exist";
+			end if;
 			select * from animal where animal.name = name_param;
         end if;
     end $$

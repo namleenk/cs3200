@@ -94,7 +94,7 @@ INSERT INTO `animal_shelter`.`checkup` (`aid`) VALUES ('1');
 
 INSERT INTO `animal_shelter`.`vaccinates` (`animal`, `staff`) VALUES ('4', '4');
 
-INSERT INTO `animal_shelter`.`appoint_vaccine` (`appointment`, `vaccine`) VALUES ('2', '3');
+INSERT INTO `animal_shelter`.`appoint_vaccine` (`appointment`, `vaccine`, `serial_no`) VALUES ('2', '3', '948');
 
 INSERT INTO `animal_shelter`.`application` (`household_members`, `current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('4', '2', 'singer', 'pending', '1', '2', '3');
 INSERT INTO `animal_shelter`.`application` (`household_members`, `current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('1', '0', 'singer', 'accepted', '1', '3', '5');

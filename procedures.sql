@@ -31,8 +31,9 @@ create trigger on_application_add
 delimiter ;
 -- test
 INSERT INTO `animal_shelter`.`application` (`household_members`, 
-`current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('Dave Matthews', 
-'1959-08-02', '1', '0', 'singer', 'pending', '6', '7', '5');
+`current_pets`, `occupation`, `status`, `animal`, `visitor`, `approver`) VALUES ('1', '0', 'singer', 'pending', '6', '7', '5');
+
+Error Code: 1136. Column count doesn't match value count at row 1
 
 -- Return all animals that aren't adopted
 delimiter $$
@@ -131,17 +132,107 @@ call new_animal("Spice", '1999-01-05', "F", 1, '2024-04-12', 13, "Canis lupus", 
 
 
 -- Given an appt type, create the corresponding appointment (vaccination or checkup) for an animal
+-- THIS DOES NOT WORK YET (as of 04/13 1107p)
 delimiter $$
-create procedure make_appt (in appt_type_p varchar(64), in notes_p varchar(256), in app_date_p date, in vet_p int, in animal_p int)
+create procedure make_appt (in appt_type varchar(64), in notes_p varchar(256), in app_date_p date, in vet_p int, in animal_p int,
+	in vac_name_p varchar(64), in vac_version_p varchar(64), in vaccine_serial_no_p int)
 	begin
+		declare taking_patients tinyint(1);
+        declare new_aid int;
+        declare vac_id int;
+        
+        -- if an animal does not exist, cannot create an appointment for them
+        if (animal_p not in (select animal_id from animal)) then
+			signal sqlstate '45000' set message_text = "This animal does not exist, so we cannot create an appointment for them";
+        end if;
+        -- if a vet does not exist, cannot create an appointment with them
+        if (vet_p not in (select vet_id from vet)) then
+			signal sqlstate '45000' set message_text = "This vet does not exist, so we cannot create an appointment for them";
+        end if;
+        -- if a vet is not accepting anymore patients, cannot create an appointment with them
+        -- select accepting_new into taking_patients from vet where vet_p = vet_id;
+        if ((select accepting_new from vet where vet_id = vet_p) = 0) then
+			signal sqlstate '45000' set message_text = "This vet is not currently taking new patients";
+        end if;
+        
+        -- if check-up then insert into appointment table and null the vaccine id
+        if (appt_type = "check up") then
+			-- if no errors, insert into appointment and check up tables
+			insert into appointment (notes, app_date, vet, animal) values (notes_p, app_date_p, vet_p, animal_p);
+            
+			insert into checkup (select aid from appointment where notes = notes_p and app_date = app_date_p and
+ 				vet = vet_p and animal = animal_p);
+		end if;
+        
+        -- if involves vaccine then insert into appointment, vaccine, and update appoint_vaccine table
+        if (appt_type = "vaccination") then
+			insert into appointment (notes, app_date, vet, animal) values (notes_p, app_date_p, vet_p, animal_p);
 		
+            -- if vaccine doesn't exist yet, add it to the vaccine table
+            if ((vac_name_p not in (select name from vaccine)) or (vac_version_p not in (select version from vaccine))) then 
+				insert into vaccine (name, vaccine) values (vac_name_p, vac_version_p);
+			end if;
+            
+            -- update appoint_vaccine table
+            -- select vac_id into vac_id from vaccine where name = vac_name_p and version = vac_version_p;
+            -- select aid into new_aid from appointment where notes = notes_p and app_date = app_date_p and vet = vet_p and animal = animal_p;
+            
+			insert into appoint_vaccine select (select aid from appointment where notes = notes_p
+				and app_date = app_date_p and vet = vet_p and animal = animal_p) as new_aid,
+                (select vac_id from vaccine where name = vac_name_p and version = vac_version_p) as vac_id,
+                vaccine_serial_no_p;
+		end if;
+    end $$
+
+delimiter ;
+drop procedure make_appt;
+call make_appt ("check up","annual check up", '2023-05-09', 7, 6, null, null, null);
+call make_appt ("vaccination", "flu shot", '2024-02-12', 7, 9, "Influenca vaccine", "2.5", 104);
+
+/*
+-- create a check up appointment
+-- REMOVE IF GETTING RID OF APPOINTMENT SUBCLASSES
+delimiter $$
+create procedure create_check_up_appt (in notes_p varchar(256), in app_date_p date, in vet_p int, in animal_p int)
+	begin
+    	declare new_aid int;
+        
+		-- check for errors
+		call make_appt(notes_p, app_date_p, vet_p, animal_p);
+        
+        -- if no errors, insert into appointment and check up tables
+		insert into appointment (notes, app_date, vet, animal) values (notes_p, app_date_p, vet_p, animal_p);
+		select aid into new_aid from appointment where notes = notes_p and app_date = app_date_p and
+			vet = vet_p and animal = animal_p;
+		insert into check_up (aid) values (new_aid);
     end $$
 delimiter ;
+
+-- create a vaccination appointment
+-- REMOVE IF GETTING RID OF APPOINTMENT SUBCLASSES
+delimiter $$
+create procedure create_vaccination_appt(in notes_p varchar(256), in app_date_p date, in vet_p int, in animal_p int,
+	in vacc_given_p varchar(64), in reason varchar(128))
+	begin
+		declare new_aid int;
+        
+		-- check for errors
+        call make_appt(notes_p, app_date_p, vet_p, animal_p);
+        
+        -- if no errors, insert into appointment and vaccination tables
+        insert into appointment (notes, app_date, vet, animal) values (notes_p, app_date_p, vet_p, animal_p);
+        select aid into new_aid from appointment where notes = notes_p and app_date = app_date_p and
+			vet = vet_p and animal = animal_p;
+		insert into vaccination (aid, vaccination_given, reason) values (new_aid, vacc_given_p, reason);
+    end $$
+delimiter ;
+*/
+
 
 -- to be used for the NEW VISITOR VIEW
 -- Given a name, dob, and address, add a new visitor and address
 delimiter $$
-create procedure new_visitor(in name_p varchar(64), in date_p date, in email_p varchar(64), 
+create procedure new_visitor(in name_p varchar(64), in date_p date, in email_p varchar(64), in v_password_p varchar(64),
 	in street_num_p int, in street_name_p varchar(64), in city_p varchar(32), in state_p char(2), in zip_p char(5))
 	begin 
 		-- first add to address table (if doens't already exist)
@@ -150,15 +241,15 @@ create procedure new_visitor(in name_p varchar(64), in date_p date, in email_p v
 		end if;
         -- then add to visitor table (if email doesn't already exist)
         if ((email_p) not in (select email from visitor)) then
-			insert into visitor (name, date_of_birth, email, street_num, street_name, city, state, zipcode)
-				values (name_p, date_p, email_p, street_num_p, street_name_p, city_p, state_p, zip_p);
+			insert into visitor (name, date_of_birth, email, v_password, street_num, street_name, city, state, zipcode)
+				values (name_p, date_p, email_p, v_password_p, street_num_p, street_name_p, city_p, state_p, zip_p);
 		else 
 			signal sqlstate '45000' set message_text = "This email is already in our database";
 		end if;
     end $$
 delimiter ;
 -- test
-call new_visitor("Beyonce", '1981-09-04', "bknowles@beyonce.com", "32", "Gainsborough Street", "Boston", "MA", 02115);
+call new_visitor("Beyonce", '1981-09-04', "bknowles@beyonce.com", "bhive", "32", "Gainsborough Street", "Boston", "MA", 02115);
 
 
 -- to be used for the RETURNING VISITOR VIEW
@@ -184,7 +275,7 @@ create procedure check_app_status (in email_p varchar(64))
 delimiter ;
 -- test
 call check_app_status("jroll@gmail.com");
-call check_app_status("k.durant@northesatern.edu"); -- should give error b/c visitor does not have an app
+-- call check_app_status("k.durant@northesatern.edu"); -- should give error b/c visitor does not have an app
 
 -- Retrieve all animals who have no application submitted for them
 delimiter $$
@@ -229,7 +320,7 @@ create procedure submit_app (in email_p varchar(64), in household_members_p int,
 delimiter ;
 -- test
 call submit_app ("davematthewssucks@gmail.com", 1, 0, "singer", 8);
-call submit_app ("prezaoun@northeastern.edu", 2, 3, "university president", 9); -- should give an error
+-- call submit_app ("prezaoun@northeastern.edu", 2, 3, "university president", 9); -- should give an error
 
 delimiter $$
 create procedure update_address(in email_p varchar(64), in street_num_p int, in street_name_p varchar(64), 
@@ -258,7 +349,6 @@ delimiter ;
 -- test
 call add_staff("Sue Bird", 35, True, 20, True, "suebird3", "MeganRapinoe3", 3);
 
-
 -- Deletes a staff member (if they get fired or leave), given either the staff's id and/or the staff's username
 delimiter $$
 create procedure remove_staff (in staff_id_p int, in username_p varchar(64))
@@ -281,7 +371,7 @@ create procedure remove_staff (in staff_id_p int, in username_p varchar(64))
 delimiter ;
 -- test
 call remove_staff(1, null);
-call remove_staff(5, null); -- should give approver error message
+-- call remove_staff(5, null); -- should give approver error message
 
 -- Given an animal's id, remove it (in case it passes away)
 delimiter $$

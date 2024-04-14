@@ -176,6 +176,7 @@ create table animal_urgent_care (
 create table appoint_vaccine (
 	appointment int,
     vaccine int,
+    serial_no int,
     primary key(appointment, vaccine),
     foreign key (appointment) references appointment(aid) on update cascade on delete cascade,
     foreign key (vaccine) references vaccine(vac_id) on update cascade on delete cascade

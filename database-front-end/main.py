@@ -3,6 +3,7 @@ from datetime import datetime
 import pymysql
 from pymysql import cursors
 
+
 # prints the list of actions a staff can do
 def staff_action_options():
     # show the staff user what they can do
@@ -14,12 +15,14 @@ def staff_action_options():
             "5. Add a new animal to the shelter (add_new_animal)\n" +
             "6. Make a new appointment for an animal (make_appt)\n" +
             "\nSimply type the shorthand in parathesis of the action you want to do and you will get further instructions")
+
     
 def run():
     # creating connection
     db_username = input("Please enter a username:\t")
     db_password = input("Please enter a password:\t")
     try:
+        global connection
         connection = pymysql.connect(host='localhost', user=db_username, password=db_password,
                                      db='animal_shelter', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
         global cursor
@@ -71,6 +74,12 @@ def run():
                 animal_name = input("Animal name:\t")
                 animal_id = input("Animal id:\t")
 
+                # if user does not know, SQL gets null value for that attribute
+                if (animal_name == ""):
+                    animal_name = None
+                if (animal_id == ""):
+                    animal_id = None
+                    
                 try:
                     cursor.callproc("lookup_animal", (animal_name, animal_id))
                     print(cursor.fetchall())
@@ -79,6 +88,16 @@ def run():
                     print(msg)
 
             # if see app status --> prompt for their email, call lookup_app_status with email or give error that no app exists
+            elif (staff_action == "see_app_status"):
+                print("Please enter the visitor's email address")
+                visitor_email = input("Visitor's email:\t")
+                try:
+                    cursor.callproc("lookup_app_status", (visitor_email,))
+                    print(cursor.fetchall())
+                except pymysql.Error as e:
+                    code, msg = e.args
+                    print(msg)
+
             # if see_stats --> call capacity_stats, no input needed
             elif (staff_action == "see_stats"):
                 cursor.callproc("capacity_stats")
@@ -86,8 +105,70 @@ def run():
                 for row in all_shelter_animals:
                     print(row)
 
-            # if add_new_animal --> prompt for anima's name, dob, sex, neutered, intake date, kennel, species, breed
+            # if add_new_animal --> prompt for animal's name, dob, sex, neutered, intake date, kennel, species, breed
                 # call new_animal with given input or give error that animal already exists
+            elif (staff_action == "add_new_animal"):
+                print("Please enter the animal's information - name, date of birth, sex, neutered, intake date, kennel, species, and breed ")
+                new_animal_name = input("Animal's name:\t")
+
+                # handle dob formatting
+                new_animal_dob_format = False
+                while (not new_animal_dob_format):
+                    new_animal_dob = input("Date of birth (YYYY-MM-DD):\t")
+                    try:
+                        datetime.strptime (new_animal_dob, "%Y-%m-%d").date()
+                        new_animal_dob = datetime.strptime (new_animal_dob, "%Y-%m-%d").date()
+                        new_animal_dob_format = True
+                    except ValueError:
+                        print("Please make sure date is entered in the format YYYY-MM-DD")
+
+                # handle sex input validation
+                new_animal_sex_valid = False
+                while (not new_animal_sex_valid):
+                    new_animal_sex = input("Sex (M or F):\t")
+                    if (new_animal_sex == "M" or new_animal_sex == "F"):
+                        new_animal_sex_valid = True
+                    else:
+                        print("Please enter either M or F for the animal's sex")
+                
+                # handle if the animal is neutered value
+                new_animal_neutered_valid = False
+                while (not new_animal_neutered_valid):
+                    new_animal_neutered = input("Neutered (T/F):\t")
+                    if (new_animal_neutered == "T"):
+                        new_animal_neutered_valid = True
+                        new_animal_neutered = 1
+                    elif (new_animal_neutered == "F"):
+                        new_animal_neutered_valid = True
+                        new_animal_neutered = 0
+                    else:
+                        print("Please enter either T or F for if the animal is neutered or not")
+                
+                # handle intake date formatting
+                new_animal_intake_date_format = False
+                while (not new_animal_intake_date_format):
+                    new_animal_intake_date = input("Intake date (YYYY-MM-DD):\t")
+                    try:
+                        datetime.strptime (new_animal_intake_date, "%Y-%m-%d").date()
+                        new_animal_intake_date = datetime.strptime (new_animal_intake_date, "%Y-%m-%d").date()
+                        new_animal_intake_date_format = True
+                    except ValueError:
+                        print("Please make sure date is entered in the format YYYY-MM-DD")
+                
+                new_animal_kennel = input("Kennel:\t")
+                new_animal_species = input("Species:\t")
+                new_animal_breed = input("Breed:\t")
+ 
+                try:
+                    cursor.callproc("new_animal", (new_animal_name, new_animal_dob, new_animal_sex, new_animal_neutered, new_animal_intake_date,
+                                                   new_animal_kennel, new_animal_species, new_animal_breed))
+                    connection.commit()
+                    print("Added animal!")
+                except pymysql.Error as e:
+                    code, msg = e.args
+                    print(msg)
+                    
+
             # if make_appt --> prompt for appt type, notes, appt date, vet, animal
                 # if vaccine --> prompt for vaccine name, vaccine version, and vaccine serial number
                 # call make_appt
@@ -155,7 +236,6 @@ def run():
 
         else:
             print("\nDid not recognize that type of login. Please retry")
-
 
 
 if __name__ == '__main__':

@@ -69,13 +69,27 @@ call lookup_animal("Paul", null);
 delimiter $$
 create procedure lookup_app_status(in email_param varchar(64))
 	begin
-		select status, email_param as email from application 
-        join visitor on visitor = visitor_id
+    declare app_status enum ('shelter', 'pending', 'adopted');
+    
+    -- if the email does not exist, inform the user
+    if (email_param not in (select email from visitor)) then
+		signal sqlstate '45000' set message_text = "This visitor does not exist";
+	end if;
+    
+	select status into app_status from application join visitor on visitor = visitor_id
 		where email_param = visitor.email;
+        
+	-- if there is no application for that visitor, inform the user
+    if (app_status is null) then
+		signal sqlstate '45000' set message_text = "There is no application for this visitor";
+	else
+		select app_status;
+	end if;
     end $$
 delimiter ;
 -- test
 call lookup_app_status("jroll@gmail.com");
+-- call lookup_app_status("nk@gmail.com"); -- error testing
 
 
 -- Returns: number of animals (both in-shelter and adopted), number of kennels, 
@@ -131,7 +145,7 @@ create procedure new_animal(in name_p varchar(64), in dob_p date, in sex_p enum(
 					(select species_id from species where breed = species_breed_p));
 			end if;
         end if;
-    end $$
+        end $$
 delimiter ;
 -- test
 call new_animal("Spice", '1999-01-05', "F", 1, '2024-04-12', 13, "Canis lupus", "Husky");

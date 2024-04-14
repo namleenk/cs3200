@@ -80,7 +80,7 @@ INSERT INTO `animal_shelter`.`vet` (`vet_id`, `accepting_new`) VALUES ('7', '1')
 
 INSERT INTO `animal_shelter`.`vaccine` (`name`, `version`) VALUES ('Rabies vaccine', '1');
 INSERT INTO `animal_shelter`.`vaccine` (`name`, `version`) VALUES ('Lyme disease vaccine', '1');
-INSERT INTO `animal_shelter`.`vaccine` (`name`, `version`) VALUES ('Influenca vaccine', '2.5');
+INSERT INTO `animal_shelter`.`vaccine` (`name`, `version`) VALUES ('Influenza vaccine', '3');
 
 INSERT INTO `animal_shelter`.`animal_urgent_care` (`animal`, `uc_id`) VALUES ('4', '1');
 INSERT INTO `animal_shelter`.`animal_urgent_care` (`animal`, `uc_id`) VALUES ('2', '2');

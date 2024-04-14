@@ -160,7 +160,7 @@ create table application (
 create table vaccine (
 	vac_id int auto_increment primary key,
     name varchar(64),
-    version varchar(64)
+    version int
 );
 
 -- animal goes to urgent care (*..*)

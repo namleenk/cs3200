@@ -68,6 +68,7 @@ def run():
         # validate the returning visitor credentials
         try:
            cursor.callproc("validate_user", (email, password, "visitor"))
+           handle_visitor_actions(connection, cursor)
         except pymysql.Error as e:
           code, msg = e.args
           print(msg) 
@@ -150,10 +151,10 @@ def staff_action_options():
 # print the list of actions a visitor can do
 def visitor_action_options():
    print("As a visitor, you can do the following:\n" + 
-         "1. Check your app status (check_app_status)" +
-         "2. View the animals with no applications for them (aniamls_with_no_app)" +
-         "3. Submit an application to adopt an animal (submit_app)" +
-         "4. Update your address (update_address)" +
+         "1. Check your app status (check_app_status)\n" +
+         "2. View the animals with no applications for them (animals_with_no_app)\n" +
+         "3. Submit an application to adopt an animal (submit_app)\n" +
+         "4. Update your address (update_address)\n" +
          "\nSimply type the shorthand in paranthesis of the action you want to do " +
          "and you will get further instructions")
 
@@ -172,9 +173,9 @@ def handle_visitor_actions(connection, cursor):
          check_app_status(cursor)
       
       # if aniamls_with_no_app --> call procedure aniamls_with_no_app, no input needed
-      elif (visitor_action == "aniamls_with_no_app"):
+      elif (visitor_action == "animals_with_no_app"):
          valid_visitor_action = True
-         aniamls_with_no_app(cursor)
+         animals_with_no_app(cursor)
       
       # if submit_app --> call procedure submit_app, prompt user for their email, number of household members, current pet count, occupation,
         # and id of the animal they want to adopt
@@ -203,9 +204,11 @@ def check_app_status(cursor):
       print(msg)
 
 # handle aniamls_with_no_app action
-def aniamls_with_no_app(cursor):
-   cursor.callproc("aniamls_with_no_app")
-   print(cursor.fetchall())
+def animals_with_no_app(cursor):
+   cursor.callproc("animals_with_no_app")
+   all_shelter_animals = cursor.fetchall()
+   for row in all_shelter_animals:
+      print(row)
 
 # handle submit_app action
 def submit_app(connection, cursor):

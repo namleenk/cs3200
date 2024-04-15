@@ -6,3 +6,5 @@ line. It should first prompt you for a username and password, this should be 'ro
 
 There are four different views for our database: new visitor, returning visitor, staff, and manager. The only operation new visitors can do is enter in personal information in order to create an account. For the three other views, after selecting a certain one, the application
 will print a list of actions you can do.
+
+"Provide a README section for creating and running the project. We need complete specifications for building your project on our computer. Specify all libraries, software, etc. needed to run the application. Specify expected installation directories. If you use a specific technology for the project, the technology’s download page must be listed."

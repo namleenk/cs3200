@@ -5,8 +5,8 @@ from pymysql import cursors
 
 # connect to database
 def connect_to_db():
-  db_username = input("Please enter a username:\t")
-  db_password = input("Please enter a password:\t")
+  db_username = input("Please enter your MySQL server username (for most it will be 'root'):\t")
+  db_password = input("Please enter your MySQL server password:\t")
   try:
       connection = pymysql.connect(host='localhost', user=db_username, password=db_password,
                                     db='animal_shelter', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)

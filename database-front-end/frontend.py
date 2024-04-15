@@ -13,7 +13,7 @@ def connect_to_db():
                                      db='animal_shelter', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
         print('Connection successful')
         return connection
-    except BaseException:
+    except pymysql.Error:
         print("Connection unsuccessful. Please check your username/password and try again.")
         return
 
@@ -66,6 +66,7 @@ def run():
                     # cursor.execute("select username from manager")
                     # all_managers = cursor.fetchall()
                     # print(all_managers)
+                    successful_login = True
                 except pymysql.Error as e:
                     code, msg = e.args
                     print(msg)
@@ -84,6 +85,7 @@ def run():
                 try:
                     cursor.callproc("validate_user", (email, password, "visitor"))
                     handle_visitor_actions(connection, cursor)
+                    successful_login = True
                 except pymysql.Error as e:
                     code, msg = e.args
                     print(msg)
@@ -190,9 +192,9 @@ def visitor_action_options():
 
 
 # delegate staff actions
-def handle_staff_actions(connection, cursor):
+def handle_staff_actions(connection, cursor, is_manager=False):
     # show the staff the option of actions
-    staff_action_options()
+    if not is_manager: staff_action_options()
     #valid_staff_action = False
     # User can continue doing actions as long as they want
     continue_actions = True
@@ -231,7 +233,12 @@ def handle_staff_actions(connection, cursor):
             valid_staff_action = True
             make_appt(connection, cursor)
         else:
-            print("That is not a valid action for a staff member")
+            # delegate to manager's function
+            if is_manager:
+                handle_manager_actions(connection, cursor, True)
+            # unrecognized input
+            else:
+                print("That is not a valid action for a staff member")
 
 
 # handle see_shelter_animal action
@@ -418,7 +425,7 @@ def make_appt(connection, cursor):
 
 
 # delegate manager actions
-def handle_manager_actions(connection, cursor):
+def handle_manager_actions(connection, cursor, no_recur = False):
     manager_action_options()
 
     continue_actions = True
@@ -426,8 +433,9 @@ def handle_manager_actions(connection, cursor):
         manager_action = input("Action (type q to quit):\t")
         if manager_action.upper() == "Q":
             continue_actions = False
+
         # handle the same actions as a staff
-        # handle_staff_actions(connection, cursor)
+        handle_staff_actions(connection, cursor, True)
 
         # if remove_staff --> call remove_staff, prompt for the staff'd id and/or username
         if (manager_action == "remove_staff"):
@@ -450,26 +458,16 @@ def handle_manager_actions(connection, cursor):
 # handle remove_staff action
 def remove_staff(connection, cursor):
     print(
-        "Please provide the username and ID of the staff member to be removed. If you don't know one of them, just hit enter")
+        "Please provide the ID of the staff member to be removed. If you don't know one of them, just hit enter")
     staff_id = input("Staff ID:\t")
-    username = input("Username:\t")
-
-    # if user doesn't know either value, SQL gets null for that attribute
-    if (username == ""):
-        username = None
-    if (staff_id == ""):
-        staff_id = None
-    else:
-        int(staff_id)
 
     try:
-        cursor.callproc("remove_staff", (staff_id, username))
+        cursor.callproc("remove_staff", (int(staff_id),))
         connection.commit()
         print("Staff removed!")
     except pymysql.Error as e:
-        print(e)
-    #  code, msg = e.args
-    #  print(msg)
+     code, msg = e.args
+     print(msg)
 
 
 # handle remove_animal action
@@ -617,7 +615,7 @@ def submit_app(connection, cursor):
 def update_address(connection, cursor):
     print("Please enter your email and new address (street number, street name, city, state, and zipcode)")
     email = input("Email:\t")
-    st_num = input("Street number\t")
+    st_num = input("Street number:\t")
     st_name = input("Street name:\t")
     city = input("City:\t")
     # handle incorrect state input length

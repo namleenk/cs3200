@@ -464,8 +464,8 @@ create procedure remove_staff (in staff_id_p int)
         
     end $$
 delimiter ;
-call remove_staff(3);
-call remove_staff(4);
+-- call remove_staff(3);
+-- call remove_staff(4);
 
 -- Given an animal's id, remove it (in case it passes away)
 delimiter $$

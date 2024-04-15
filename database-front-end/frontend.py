@@ -39,11 +39,13 @@ def run():
         try:
            cursor.callproc("validate_user", (username, password, "staff"))
            # show the staff the actions they can take
+           start_actions()
            handle_staff_actions(connection, cursor)
         except pymysql.Error as e:
           code, msg = e.args
           print(msg) 
 
+    # MANAGER VIEW
     if view_type == "manager":
       successful_login = True # validate the manager credentials
       print("Please enter your username and password")
@@ -51,9 +53,10 @@ def run():
       password = input("Password:\t")
       try:
         cursor.callproc("validate_user", (username, password, "manager"))
-        cursor.execute("select username from manager")
-        all_managers = cursor.fetchall()
-        print(all_managers)
+        handle_manager_actions(connection, cursor)
+        # cursor.execute("select username from manager")
+        # all_managers = cursor.fetchall()
+        # print(all_managers)
       except pymysql.Error as e:
         code, msg = e.args
         print(msg)
@@ -135,6 +138,11 @@ def create_new_visitor (connection, cursor):
       print("Error calling new_visitor procedure", code, msg)
   # if information is all there
   print("Your account has been successfully created. Please log out and log in as a returning visitor.")
+
+# how to start actions
+def start_actions():
+   print( "\nSimply type the shorthand in paranthesis of the action you want to do "+
+          "and you will get further instructions")
         
 # prints the list of actions a staff can do
 def staff_action_options():
@@ -144,9 +152,16 @@ def staff_action_options():
           "3. Look at a visitor's application status (see_app_status)\n" +
           "4. Look at shelter statistics (see_stats)\n" +
           "5. Add a new animal to the shelter (add_new_animal)\n" +
-          "6. Make a new appointment for an animal (make_appt)\n" +
-          "\nSimply type the shorthand in paranthesis of the action you want to do "+
-          "and you will get further instructions")
+          "6. Make a new appointment for an animal (make_appt)\n")
+
+# prints the list of actions a manager can do
+def manager_action_options():
+   staff_action_options()
+   print("\n As a manager you also have additional abilities, such as:\n" +
+         "7. Remove staff members that are fired or have quit (remove_staff)\n" +
+         "8. Remove an animal, if it has unfortunately passed away (remove_animal)\n" +
+         "9. Add a new staff member (add_staff)\n")
+   start_actions()
 
 # print the list of actions a visitor can do
 def visitor_action_options():
@@ -154,114 +169,13 @@ def visitor_action_options():
          "1. Check your app status (check_app_status)\n" +
          "2. View the animals with no applications for them (animals_with_no_app)\n" +
          "3. Submit an application to adopt an animal (submit_app)\n" +
-         "4. Update your address (update_address)\n" +
-         "\nSimply type the shorthand in paranthesis of the action you want to do " +
-         "and you will get further instructions")
-
-# delegate visitor actions
-def handle_visitor_actions(connection, cursor):
-   visitor_action_options()
-   valid_visitor_action = False
-
-   # make sure the user entered a valid action option
-   while (not valid_visitor_action):
-      visitor_action = input("Action:\t")
-
-      # if check app status --> call procedure check_app_status, prompt user for their email
-      if (visitor_action == "check_app_status"):
-         valid_visitor_action = True
-         check_app_status(cursor)
-      
-      # if aniamls_with_no_app --> call procedure aniamls_with_no_app, no input needed
-      elif (visitor_action == "animals_with_no_app"):
-         valid_visitor_action = True
-         animals_with_no_app(cursor)
-      
-      # if submit_app --> call procedure submit_app, prompt user for their email, number of household members, current pet count, occupation,
-        # and id of the animal they want to adopt
-      elif (visitor_action == "submit_app"):
-         valid_visitor_action = True
-         submit_app(connection, cursor)
-
-      # if update_address --> call procedure update_address, prompt user for their email, new st num, new st name, new city, new state,
-        # and new zipcode
-      elif (visitor_action == "update_address"):
-         valid_visitor_action = True
-         update_address(connection, cursor)
-      
-      else:
-         print("That is not a valid visitor action")
-
-
-# handle check_app_status action
-def check_app_status(cursor):
-   print("Please provide the email you used to submit your application")
-   email = input("Email:\t")
-   try:
-      cursor.callproc("check_app_status", (email,))
-   except pymysql.Error as e:
-      code, msg = e.args
-      print(msg)
-
-# handle aniamls_with_no_app action
-def animals_with_no_app(cursor):
-   cursor.callproc("animals_with_no_app")
-   all_shelter_animals = cursor.fetchall()
-   for row in all_shelter_animals:
-      print(row)
-
-# handle submit_app action
-def submit_app(connection, cursor):
-   print("Please provide your email, number of household members, number of current pets, occupation, and the id of the animal you would like to adopt")
-   email = input("Email:\t")
-   num_house_mem = input("Number of household members:\t")
-   num_curr_pets = input("Number of current pets:\t")
-   occupation = input("Occupation:\t")
-   animal_id = input("Animal ID:\t")
-
-   try:
-      cursor.callproc("submit_app", (email, int(num_house_mem), int(num_curr_pets),occupation, int(animal_id)))
-      connection.commit()
-      print("Application submitted!")
-   except pymysql.Error as e:
-      code, msg = e.args
-      print(msg)
-# handle update_address action
-def update_address(connection, cursor):
-  print("Please enter your email and new address (street number, street name, city, state, and zipcode)")
-  email = input("Email:\t")
-  st_num = input("Street number\t")
-  st_name = input("Street name:\t")
-  city = input("City:\t")
-  # handle incorrect state input length
-  state_len = False
-  while (not state_len):
-    state = input("State (abbrev to 2 characters): \t")
-    if (len(state) != 2):
-      print("Please make sure the state is abbreviated to 2 characters")
-    else:
-      state_len = True
-
-  # # handle incorrect zipcode input length
-  zipcode_len = False
-  while (not zipcode_len):
-    zipcode = input("Zipcode (must be 5 characters): \t")
-    if (len(zipcode) != 5):
-        print("Please make sure the zipcode is 5 characters")
-    else:
-        zipcode_len = True
-  
-  try:
-     cursor.callproc("update_address", (email, st_num, st_name, city, state, zipcode))
-     connection.commit()
-  except pymysql.Error as e:
-     code, msg = e.args
-     print(msg)
+         "4. Update your address (update_address)\n")
+   start_actions()
 
 # delegate staff actions
 def handle_staff_actions(connection, cursor):
    # show the staff the option of actions
-   staff_action_options()
+   # staff_action_options()
    valid_staff_action = False
   
    # make sure the user entered a valid action option
@@ -471,6 +385,219 @@ def make_appt(connection, cursor):
               print(msg)
       else:
           print("Appointments can only be check up or vaccination")
+
+# delegate manager actions
+def handle_manager_actions(connection, cursor):
+   manager_action_options()
+
+   valid_manager_action = False
+   while (not valid_manager_action):
+      manager_action = input("Action:\t")
+
+      # handle the same actions as a staff
+      # handle_staff_actions(connection, cursor)
+
+      # if remove_staff --> call remove_staff, prompt for the staff'd id and/or username
+      if (manager_action == "remove_staff"):
+         valid_manager_action = True
+         remove_staff(connection, cursor)
+      # if remove_animal --> call remove_animal, prompt for animal id
+      elif (manager_action == "remove_animal"):
+         valid_manager_action = True
+         remove_animal(connection, cursor)
+      # if add_staff --> call add_staff, prompt for staff's name, hours per week, full time, salary, approver status, username, password, and manager (maybe this manager)
+      elif (manager_action == "add_staff"):
+         valid_manager_action = True
+         add_staff(connection, cursor)
+      else:
+         print("That is not a valid action for a manager")
+
+      # handle_staff_actions(connection, cursor)
+
+# handle remove_staff action
+def remove_staff(connection, cursor):
+  print("Please provide the username and ID of the staff member to be removed. If you don't know one of them, just hit enter")
+  username = input("Username:\t")
+  staff_id = input("Staff ID:\t")
+
+  # if user doesn't know either value, SQL gets null for that attribute
+  if (username == ""):
+     username = None
+  if (staff_id == ""):
+     staff_id = None
+  else:
+     int(staff_id)
+  try:
+     cursor.callproc("remove_staff", (staff_id, username))
+     connection.commit()
+     print("Staff removed!")
+  except pymysql.Error as e:
+     code, msg = e.args
+     print(msg)
+
+# handle remove_animal action
+def remove_animal(connection, cursor):
+  print("Please enter the ID of the animal to be removed")
+  animal_id = input("Animal ID:\t")
+
+  try:
+     cursor.callproc("remove_animal", (animal_id,))
+     connection.commit()
+     print("Animal removed!")
+  except pymysql.Error as e:
+     code, msg = e.args
+     print(msg)
+
+# handle add_staff action
+def add_staff(connection, cursor):
+  print("Please enter the new staff members's name, how many hours they work per week, if they are full time, their salary, if they have approver status, " +
+       "their username, their password, and their manager's ID")
+  
+  name = input("Name:\t")
+  hours_per_week = input("Hours per week:\t")
+
+  # handle if the staff is full time
+  full_time_valid = False
+  while (not full_time_valid):
+      full_time = input("Full time? (T/F):")
+      if (full_time == "T"):
+          full_time_valid = True
+          full_time = 1
+      elif (full_time == "F"):
+          full_time_valid = True
+          full_time = 0
+      else:
+          print("Please enter either T or F for if the staff member will be full time or not")
+
+  salary = input("Salary (for the year, ex: 10 = 10k):\t")
+
+ # handle if the staff has approver status
+  approver_status_valid = False
+  while (not approver_status_valid):
+      approver_status = input("Approver status? (T/F):")
+      if (approver_status == "T"):
+          approver_status_valid = True
+          approver_status = 1
+      elif (approver_status == "F"):
+          approver_status_valid = True
+          approver_status = 0
+      else:
+          print("Please enter either T or F for if the staff member will be full time or not")
+  
+  username = input("Username:\t")
+  password = input("Password:\t")
+  manager_id = input("Manager ID:\t")
+
+  try:
+     cursor.callproc("add_staff", (name, int(hours_per_week), full_time, int(salary), approver_status, username, password, int(manager_id)))
+     connection.commit()
+     print("Staff added!")
+  except pymysql.Error as e:
+     code, msg = e.args
+     print(msg)
+    
+   
+
+# delegate visitor actions
+def handle_visitor_actions(connection, cursor):
+   visitor_action_options()
+   valid_visitor_action = False
+
+   # make sure the user entered a valid action option
+   while (not valid_visitor_action):
+      visitor_action = input("Action:\t")
+
+      # if check app status --> call procedure check_app_status, prompt user for their email
+      if (visitor_action == "check_app_status"):
+         valid_visitor_action = True
+         check_app_status(cursor)
+      
+      # if aniamls_with_no_app --> call procedure aniamls_with_no_app, no input needed
+      elif (visitor_action == "animals_with_no_app"):
+         valid_visitor_action = True
+         animals_with_no_app(cursor)
+      
+      # if submit_app --> call procedure submit_app, prompt user for their email, number of household members, current pet count, occupation,
+        # and id of the animal they want to adopt
+      elif (visitor_action == "submit_app"):
+         valid_visitor_action = True
+         submit_app(connection, cursor)
+
+      # if update_address --> call procedure update_address, prompt user for their email, new st num, new st name, new city, new state,
+        # and new zipcode
+      elif (visitor_action == "update_address"):
+         valid_visitor_action = True
+         update_address(connection, cursor)
+      
+      else:
+         print("That is not a valid visitor action")
+
+
+# handle check_app_status action
+def check_app_status(cursor):
+   print("Please provide the email you used to submit your application")
+   email = input("Email:\t")
+   try:
+      cursor.callproc("check_app_status", (email,))
+   except pymysql.Error as e:
+      code, msg = e.args
+      print(msg)
+
+# handle aniamls_with_no_app action
+def animals_with_no_app(cursor):
+   cursor.callproc("animals_with_no_app")
+   all_shelter_animals = cursor.fetchall()
+   for row in all_shelter_animals:
+      print(row)
+
+# handle submit_app action
+def submit_app(connection, cursor):
+   print("Please provide your email, number of household members, number of current pets, occupation, and the id of the animal you would like to adopt")
+   email = input("Email:\t")
+   num_house_mem = input("Number of household members:\t")
+   num_curr_pets = input("Number of current pets:\t")
+   occupation = input("Occupation:\t")
+   animal_id = input("Animal ID:\t")
+
+   try:
+      cursor.callproc("submit_app", (email, int(num_house_mem), int(num_curr_pets),occupation, int(animal_id)))
+      connection.commit()
+      print("Application submitted!")
+   except pymysql.Error as e:
+      code, msg = e.args
+      print(msg)
+# handle update_address action
+def update_address(connection, cursor):
+  print("Please enter your email and new address (street number, street name, city, state, and zipcode)")
+  email = input("Email:\t")
+  st_num = input("Street number\t")
+  st_name = input("Street name:\t")
+  city = input("City:\t")
+  # handle incorrect state input length
+  state_len = False
+  while (not state_len):
+    state = input("State (abbrev to 2 characters): \t")
+    if (len(state) != 2):
+      print("Please make sure the state is abbreviated to 2 characters")
+    else:
+      state_len = True
+
+  # # handle incorrect zipcode input length
+  zipcode_len = False
+  while (not zipcode_len):
+    zipcode = input("Zipcode (must be 5 characters): \t")
+    if (len(zipcode) != 5):
+        print("Please make sure the zipcode is 5 characters")
+    else:
+        zipcode_len = True
+  
+  try:
+     cursor.callproc("update_address", (email, st_num, st_name, city, state, zipcode))
+     connection.commit()
+  except pymysql.Error as e:
+     code, msg = e.args
+     print(msg)
+
 
 
 

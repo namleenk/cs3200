@@ -63,10 +63,10 @@ create procedure validate_user (in username_p varchar(64), in password_p varchar
     end $$
 delimiter ;
 -- tests
-call validate_user ("lbluder", "j", "manager");
+-- call validate_user ("lbluder", "j", "manager"); -- should give error message
 call validate_user ("kcardoso", "sc10", "staff");
 call validate_user ("jroll@gmail.com", "jellyroll1", "visitor");
-call validate_user ("lbluder", "hawkeyes", "staff");
+-- call validate_user ("lbluder", "hawkeyes", "staff");
 
 
 -- when an animal gets adopted, set its kennel to null
@@ -276,10 +276,6 @@ create procedure make_appt (in appt_type varchar(64), in notes_p varchar(256), i
 		end if;
     end $$
 delimiter ;
-drop procedure make_appt;
-
-select vac_id from vaccine where name = "Influenza vaccine" and version = 3;
-select aid from appointment where notes = "flu shot" and app_date = '2024-02-12' and vet = 7 and animal = 9;
 -- tests
 call make_appt ("check up","annual check up", '2023-05-09', 7, 6, null, null, null);
 call make_appt ("vaccination", "flu shot", '2024-02-12', 7, 9, "Influenza vaccine", 3, 104);
@@ -434,9 +430,13 @@ call update_address("k.durant@northesatern.edu", 420, "America Lane", "Houston",
 
 -- to be used for MANAGER VIEW
 delimiter $$
-create procedure add_staff(in name_p varchar(64), hours_per_week_p int, full_time_p bool, salary_p int, 
-approver_status_p bool, username_p varchar(64), password_p varchar(64), manager_p int)
+create procedure add_staff(in name_p varchar(64), in hours_per_week_p int, in full_time_p bool, in salary_p int, 
+in approver_status_p bool, in username_p varchar(64), in password_p varchar(64), in manager_p int)
 	begin
+		-- check if the given manager exists
+		if (manager_p not in (select manager_id from manager)) then
+			signal sqlstate '45000' set message_text = "A manager with the given ID does not exist";
+		end if;
 		insert into staff (name, hours_per_week, full_time, salary, approver_status, username, password, manager)
 			values (name_p, hours_per_week_p, full_time_p, salary_p, approver_status_p, username_p, password_p, manager_p);
 	end $$
@@ -449,7 +449,7 @@ delimiter $$
 create procedure remove_staff (in staff_id_p int, in username_p varchar(64))
 	begin
 		-- if the staff does not exist, we cannot delete it
-        if ((staff_id_p not in (select staff_id from staff)) or (username_p not in (select username from staff)))
+        if ((staff_id_p not in (select staff_id from staff)) and (username_p not in (select username from staff)))
 			then signal sqlstate '45000' set message_text = "This staff does not exist so it cannot be deleted";
 		end if;
         -- if the staff is a vet, we cannot delete it
@@ -465,7 +465,9 @@ create procedure remove_staff (in staff_id_p int, in username_p varchar(64))
     end $$
 delimiter ;
 -- test
-call remove_staff(1, null);
+-- drop procedure remove_staff;
+-- call remove_staff(1, null);
+-- call remove_staff(3, null); -- should throw error
 -- call remove_staff(5, null); -- should give approver error message
 
 -- Given an animal's id, remove it (in case it passes away)

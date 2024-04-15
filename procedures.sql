@@ -7,12 +7,11 @@ create procedure validate_user (in username_p varchar(64), in password_p varchar
 	begin
 		if (table_p != "staff" and table_p != "manager" and table_p != "visitor") then
 				signal sqlstate'45000' set message_text="That is not a valid user type";
-			end if;
+		end if;
             
 		-- staff validation
         if (table_p = "staff") then
 			-- check staff input
-            select * from staff;
             
             -- if the username does not exist, error
             if (username_p not in (select username from staff)) then 
@@ -67,7 +66,7 @@ delimiter ;
 call validate_user ("kcardoso", "sc10", "staff");
 call validate_user ("jroll@gmail.com", "jellyroll1", "visitor");
 -- call validate_user ("lbluder", "hawkeyes", "staff");
-
+-- call validate_user ("cclark", "23", "staff");
 
 -- when an animal gets adopted, set its kennel to null
 delimiter $$

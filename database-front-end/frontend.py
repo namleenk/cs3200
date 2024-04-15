@@ -35,6 +35,7 @@ def run():
         # STAFF VIEW
         if view_type == "staff":
             successful_choice = True
+            # Let user enter their username/password until they get it right
             successful_login = False
             while not successful_login:
                 print("Please enter your username and password")
@@ -44,8 +45,7 @@ def run():
                 # validate the staff credentials
                 try:
                     cursor.callproc("validate_user", (username, password, "staff"))
-                    # start_actions()
-                    # handle_staff_actions(connection, cursor)
+                    handle_staff_actions(connection, cursor)
                     successful_login = True
                 except pymysql.Error as e:
                     code, msg = e.args
@@ -54,33 +54,39 @@ def run():
         # MANAGER VIEW
         elif view_type == "manager":
             successful_choice = True  # validate the manager credentials
-            print("Please enter your username and password")
-            username = input("Username:\t")
-            password = input("Password:\t")
-            try:
-                cursor.callproc("validate_user", (username, password, "manager"))
-                handle_manager_actions(connection, cursor)
-                # cursor.execute("select username from manager")
-                # all_managers = cursor.fetchall()
-                # print(all_managers)
-            except pymysql.Error as e:
-                code, msg = e.args
-                print(msg)
+            # Let user enter their username/password until they get it right
+            successful_login = False
+            while not successful_login:
+                print("Please enter your username and password")
+                username = input("Username:\t")
+                password = input("Password:\t")
+                try:
+                    cursor.callproc("validate_user", (username, password, "manager"))
+                    handle_manager_actions(connection, cursor)
+                    # cursor.execute("select username from manager")
+                    # all_managers = cursor.fetchall()
+                    # print(all_managers)
+                except pymysql.Error as e:
+                    code, msg = e.args
+                    print(msg)
 
         # VISITOR VIEW (RETURNING)
         elif view_type == "returning":
             successful_choice = True
-            print("Please enter your email and password")
-            email = input("Email:\t")
-            password = input("Password:\t")
+            # Let user enter their username/password until they get it right
+            successful_login = False
+            while not successful_login:
+                print("Please enter your email and password")
+                email = input("Email:\t")
+                password = input("Password:\t")
 
-            # validate the returning visitor credentials
-            try:
-                cursor.callproc("validate_user", (email, password, "visitor"))
-                handle_visitor_actions(connection, cursor)
-            except pymysql.Error as e:
-                code, msg = e.args
-                print(msg)
+                # validate the returning visitor credentials
+                try:
+                    cursor.callproc("validate_user", (email, password, "visitor"))
+                    handle_visitor_actions(connection, cursor)
+                except pymysql.Error as e:
+                    code, msg = e.args
+                    print(msg)
 
         # NEW VISITOR VIEW
         elif view_type == "new":
@@ -160,6 +166,7 @@ def staff_action_options():
           "4. Look at shelter statistics (see_stats)\n" +
           "5. Add a new animal to the shelter (add_new_animal)\n" +
           "6. Make a new appointment for an animal (make_appt)\n")
+    start_actions()
 
 
 # prints the list of actions a manager can do
@@ -184,20 +191,21 @@ def visitor_action_options():
 
 # delegate staff actions
 def handle_staff_actions(connection, cursor):
-    print("hiiii")
     # show the staff the option of actions
     staff_action_options()
-    valid_staff_action = False
-
-    # make sure the user entered a valid action option
-    while (not valid_staff_action):
+    #valid_staff_action = False
+    # User can continue doing actions as long as they want
+    continue_actions = True
+    while continue_actions:
         # take the input
-        staff_action = input("Action:\t")
+        staff_action = input("Action (type q to quit):\t")
+        # If they want to quit and stop doing actions
+        if staff_action.upper() == "Q":
+            continue_actions = False
         # if see shelter animal --> call procedure see_shelter_animals(), no input needed
-        if (staff_action == "see_shelter_animals"):
+        elif (staff_action == "see_shelter_animals"):
             valid_staff_action = True
             see_shelter_animals(cursor)
-
         # if look up animal --> prompt for animal name or animal id, call lookup_animal with either input
         # if user does not know, SQL gets null value for that attribute
         elif (staff_action == "look_up_animal"):
@@ -413,10 +421,11 @@ def make_appt(connection, cursor):
 def handle_manager_actions(connection, cursor):
     manager_action_options()
 
-    valid_manager_action = False
-    while (not valid_manager_action):
-        manager_action = input("Action:\t")
-
+    continue_actions = True
+    while continue_actions:
+        manager_action = input("Action (type q to quit):\t")
+        if manager_action.upper() == "Q":
+            continue_actions = False
         # handle the same actions as a staff
         # handle_staff_actions(connection, cursor)
 
@@ -534,10 +543,11 @@ def handle_visitor_actions(connection, cursor):
     visitor_action_options()
     valid_visitor_action = False
 
-    # make sure the user entered a valid action option
-    while (not valid_visitor_action):
+    continue_actions = True
+    while continue_actions:
         visitor_action = input("Action:\t")
-
+        if visitor_action.upper() == "Q":
+            continue_actions = False
         # if check app status --> call procedure check_app_status, prompt user for their email
         if (visitor_action == "check_app_status"):
             valid_visitor_action = True

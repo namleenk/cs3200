@@ -15,7 +15,7 @@ def connect_to_db():
   except BaseException:
       print("Connection unsuccessful. Please check your username/password and try again.")
       return
-  
+
 def run():
    connection = connect_to_db()
    if not connection:

@@ -1,6 +1,73 @@
 -- ~~~~~~~ PROCEDURES/TRIGGERS ~~~~~~~~~
 use animal_shelter;
 
+-- validate the user information
+delimiter $$
+create procedure validate_user (in username_p varchar(64), in password_p varchar(64), in table_p varchar(64))
+	begin
+		if (table_p != "staff" and table_p != "manager" and table_p != "visitor") then
+				signal sqlstate'45000' set message_text="That is not a valid user type";
+			end if;
+            
+		-- staff validation
+        if (table_p = "staff") then
+			-- check staff input
+            select * from staff;
+            
+            -- if the username does not exist, error
+            if (username_p not in (select username from staff)) then 
+				signal sqlstate '45000' set message_text = "That is not a valid staff username";
+			end if;
+            
+            -- if the password is not correct for the given username, error
+            if (password_p not in (select password from staff where username = username_p)) then
+				signal sqlstate '45000' set message_text = "That is not the correct password for this username";
+			end if;
+            
+            -- otherwise it's a successful login
+			select "Successful staff login";
+		end if;
+        
+        -- manager validation
+        if (table_p = "manager") then
+			-- check manager input
+            -- if the username does not exist, error
+            if (username_p not in (select username from manager)) then 
+				signal sqlstate '45000' set message_text = "That is not a valid manager username";
+			end if;
+            
+            -- if the password is not correct for the given username, error
+            if (password_p not in (select password from manager where username = username_p)) then
+				signal sqlstate '45000' set message_text = "That is not the correct password for this username";
+			end if;
+            
+            -- otherwise it's a successful login
+			select "Successful manager login";
+		end if;
+        -- visitor validation
+        if (table_p = "visitor") then 
+			-- check visitor input
+            -- if the username does not exist, error
+            if (username_p not in (select email from visitor)) then 
+				signal sqlstate '45000' set message_text = "That is not a valid visitor username";
+			end if;
+            
+            -- if the password is not correct for the given username, error
+            if (password_p not in (select v_password from visitor where email = username_p)) then
+				signal sqlstate '45000' set message_text = "That is not the correct password for this username";
+			end if;
+            -- otherwise it's a successful login
+			select "Successful visitor login";
+            
+		end if;
+    end $$
+delimiter ;
+-- tests
+call validate_user ("lbluder", "hawkeyes", "manager");
+call validate_user ("kcardoso", "sc10", "staff");
+call validate_user ("jroll@gmail.com", "jellyroll1", "visitor");
+
+
 -- when an animal gets adopted, set its kennel to null
 delimiter $$
 create trigger empty_kennel

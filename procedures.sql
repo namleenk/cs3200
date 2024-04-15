@@ -443,32 +443,29 @@ delimiter ;
 -- test
 call add_staff("Sue Bird", 35, True, 20, True, "suebird3", "MeganRapinoe3", 3);
 
--- Deletes a staff member (if they get fired or leave), given either the staff's id and/or the staff's username
+-- Deletes a staff member (if they get fired or leave), given the staff's id
 delimiter $$
-create procedure remove_staff (in staff_id_p int, in username_p varchar(64))
+create procedure remove_staff (in staff_id_p int)
 	begin
-		-- if the staff does not exist, we cannot delete it
-        if ((staff_id_p not in (select staff_id from staff)) and (username_p not in (select username from staff)))
-			then signal sqlstate '45000' set message_text = "This staff does not exist so it cannot be deleted";
+		-- if the staff does not exist, we cannot remove them
+        if (staff_id_p not in (select staff_id from staff)) then
+			signal sqlstate '45000' set message_text = "This staff does not exist";
 		end if;
-        -- if the staff is a vet, we cannot delete it
+        -- if the staff is a vet, we cannot remove them
         if (staff_id_p in (select vet_id from vet)) then
-			signal sqlstate '45000' set message_text = "Vets cannot be deleted";
+			signal sqlstate '45000' set message_text = "This staff is a vet and cannot be removed";
 		end if;
-        -- if the staff is a approver of an application, remove the approver
-        if (staff_id_p in (select approver from application)) then
- 			signal sqlstate '45000' set message_text = "Application approvers cannot be deleted";
+        -- if the staff is an approver, we cannot remove them
+		if (staff_id_p in (select approver from application)) then
+			signal sqlstate '45000' set message_text = "This staff is an approver and cannot be removed";
 		end if;
-        -- delete the staff from the table
-        delete from staff where staff_id = staff_id_p or username = username_p;
+        
+        delete from staff where staff_id = staff_id_p;
+        
     end $$
 delimiter ;
--- test
--- drop procedure remove_staff;
-call remove_staff(1, null);
--- call remove_staff(null, "nmuhl");
--- call remove_staff(3, null); -- should throw error
--- call remove_staff(5, null); -- should give approver error message
+call remove_staff(3);
+call remove_staff(4);
 
 -- Given an animal's id, remove it (in case it passes away)
 delimiter $$

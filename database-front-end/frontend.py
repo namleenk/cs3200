@@ -25,7 +25,7 @@ def run():
 
    successful_login = False
    while (not successful_login):
-    print("\nWelcome to Second Chance Animal Shelter. Are you a returning visitor, staff member, or new visitor?")
+    print("\nWelcome to Second Chance Animal Shelter. Are you a returning visitor, staff member, manager, or new visitor?")
     view_type = input("Please enter 'staff', 'manager,' 'new', or 'returning':\t")
 
     # STAFF VIEW
@@ -97,7 +97,6 @@ def create_new_visitor (connection, cursor):
   while (not dob_format):
       new_dob = input("Date of birth (YYYY-MM-DD):\t")
       try:
-          datetime.strptime (new_dob, "%Y-%m-%d").date()
           new_dob = datetime.strptime (new_dob, "%Y-%m-%d").date()
           dob_format = True
       except ValueError:
@@ -417,8 +416,8 @@ def handle_manager_actions(connection, cursor):
 # handle remove_staff action
 def remove_staff(connection, cursor):
   print("Please provide the username and ID of the staff member to be removed. If you don't know one of them, just hit enter")
-  username = input("Username:\t")
   staff_id = input("Staff ID:\t")
+  username = input("Username:\t")
 
   # if user doesn't know either value, SQL gets null for that attribute
   if (username == ""):
@@ -427,13 +426,15 @@ def remove_staff(connection, cursor):
      staff_id = None
   else:
      int(staff_id)
+
   try:
      cursor.callproc("remove_staff", (staff_id, username))
      connection.commit()
-     print("Staff removed!")
+     # print("Staff removed!")
   except pymysql.Error as e:
-     code, msg = e.args
-     print(msg)
+     print(e)
+    #  code, msg = e.args
+    #  print(msg)
 
 # handle remove_animal action
 def remove_animal(connection, cursor):

@@ -456,17 +456,18 @@ create procedure remove_staff (in staff_id_p int, in username_p varchar(64))
         if (staff_id_p in (select vet_id from vet)) then
 			signal sqlstate '45000' set message_text = "Vets cannot be deleted";
 		end if;
-        -- if the staff is a approver of an application, we cannot delete it
+        -- if the staff is a approver of an application, remove the approver
         if (staff_id_p in (select approver from application)) then
-			signal sqlstate '45000' set message_text = "Application approvers cannot be deleted";
-        end if;
+ 			signal sqlstate '45000' set message_text = "Application approvers cannot be deleted";
+		end if;
         -- delete the staff from the table
         delete from staff where staff_id = staff_id_p or username = username_p;
     end $$
 delimiter ;
 -- test
 -- drop procedure remove_staff;
--- call remove_staff(1, null);
+call remove_staff(1, null);
+-- call remove_staff(null, "nmuhl");
 -- call remove_staff(3, null); -- should throw error
 -- call remove_staff(5, null); -- should give approver error message
 

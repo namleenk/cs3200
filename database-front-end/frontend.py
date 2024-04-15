@@ -26,25 +26,114 @@ def run():
    successful_login = False
    while (not successful_login):
     print("\nWelcome to Second Chance Animal Shelter. Are you a returning visitor, staff member, or new visitor?")
-    view_type = input("Please enter 'staff', 'new', or 'returning':\t")
+    view_type = input("Please enter 'staff', 'manager,' 'new', or 'returning':\t")
 
-    # STAFF OR MANAGER VIEW
+    # STAFF VIEW
     if view_type == "staff":
         successful_login = True
         print("Please enter your username and password")
         username = input("Username:\t")
         password = input("Password:\t")
-        # check if username is in manager table or not
+
+        # validate the staff credentials
+        try:
+           cursor.callproc("validate_user", (username, password, "staff"))
+           # show the staff the actions they can take
+           handle_staff_actions(connection, cursor)
+        except pymysql.Error as e:
+          code, msg = e.args
+          print(msg) 
+
+    if view_type == "manager":
+      successful_login = True # validate the manager credentials
+      print("Please enter your username and password")
+      username = input("Username:\t")
+      password = input("Password:\t")
+      try:
+        cursor.callproc("validate_user", (username, password, "manager"))
         cursor.execute("select username from manager")
         all_managers = cursor.fetchall()
-        # is this user a manager?
-        all_manager_usernames = [list(x.values())[0] for x in all_managers]
+        print(all_managers)
+      except pymysql.Error as e:
+        code, msg = e.args
+        print(msg)
 
-        is_manager = username in all_manager_usernames
-        # only if the user is manager, they can see all staffs' login information
-        if (is_manager):
-            print(all_managers, is_manager)
-        handle_staff_actions(connection, cursor)
+    # VISITOR VIEW (RETURNING)
+    elif view_type == "returning":
+        successful_login = True
+        print("Please enter your email and password")
+        email = input("Email:\t")
+        password = input("Password:\t")
+
+        # validate the returning visitor credentials
+        try:
+           cursor.callproc("validate_user", (email, password, "visitor"))
+        except pymysql.Error as e:
+          code, msg = e.args
+          print(msg) 
+
+      # NEW VISITOR VIEW
+    elif view_type == "new":
+        successful_login = True
+        create_new_visitor(connection, cursor)
+
+    else:
+        print("\nDid not recognize that type of login. Please retry")
+
+
+# create a new visitor
+def create_new_visitor (connection, cursor):
+  print("Please provide your name, date of birth, email, a new password, and address." +
+          "Your address must consist of a street number, street name, city, state abbreviation, and zip code")
+
+  new_name = input("Name:\t")
+
+  # handle incorrect dob format
+  dob_format = False
+  while (not dob_format):
+      new_dob = input("Date of birth (YYYY-MM-DD):\t")
+      try:
+          datetime.strptime (new_dob, "%Y-%m-%d").date()
+          new_dob = datetime.strptime (new_dob, "%Y-%m-%d").date()
+          dob_format = True
+      except ValueError:
+          print("Please make sure date is entered in the format YYYY-MM-DD")
+
+  new_email = input("Email:\t")
+  new_pswd = input("New password:\t")
+  new_street_num = input("Street number:\t")
+  new_street_name = input("Street name:\t")
+  new_city = input("City:\t")
+
+  # handle incorrect state input length
+  state_len = False
+  while (not state_len):
+      new_state = input("State (abbrev to 2 characters): \t")
+      if (len(new_state) != 2):
+          print("Please make sure the state is abbreviated to 2 characters")
+      else:
+          state_len = True
+
+  # handle incorrect zipcode input length
+  zipcode_len = False
+  while (not zipcode_len):
+      new_zipcode = input("Zipcode (must be 5 characters): \t")
+      if (len(new_zipcode) != 5):
+          print("Please make sure the zipcode is 5 characters")
+      else:
+          zipcode_len = True
+
+  # call the procedure new visitor to create a new visitor with the inputted credentials
+  try:
+      cursor.callproc("new_visitor", (new_name, new_dob, new_email, new_pswd, int(new_street_num),
+                                      new_street_name, new_city, new_state, new_zipcode))
+      # commit() actually makes the changes to the backend database
+      connection.commit()
+  except pymysql.Error as e:
+      code, msg = e.args
+      print("Error calling new_visitor procedure", code, msg)
+  # if information is all there
+  print("Your account has been successfully created. Please log out and log in as a returning visitor.")
         
 # prints the list of actions a staff can do
 def staff_action_options():
@@ -55,8 +144,116 @@ def staff_action_options():
           "4. Look at shelter statistics (see_stats)\n" +
           "5. Add a new animal to the shelter (add_new_animal)\n" +
           "6. Make a new appointment for an animal (make_appt)\n" +
-          "\nSimply type the shorthand in parathesis of the action you want to do "+
+          "\nSimply type the shorthand in paranthesis of the action you want to do "+
           "and you will get further instructions")
+
+# print the list of actions a visitor can do
+def visitor_action_options():
+   print("As a visitor, you can do the following:\n" + 
+         "1. Check your app status (check_app_status)" +
+         "2. View the animals with no applications for them (aniamls_with_no_app)" +
+         "3. Submit an application to adopt an animal (submit_app)" +
+         "4. Update your address (update_address)" +
+         "\nSimply type the shorthand in paranthesis of the action you want to do " +
+         "and you will get further instructions")
+
+# delegate visitor actions
+def handle_visitor_actions(connection, cursor):
+   visitor_action_options()
+   valid_visitor_action = False
+
+   # make sure the user entered a valid action option
+   while (not valid_visitor_action):
+      visitor_action = input("Action:\t")
+
+      # if check app status --> call procedure check_app_status, prompt user for their email
+      if (visitor_action == "check_app_status"):
+         valid_visitor_action = True
+         check_app_status(cursor)
+      
+      # if aniamls_with_no_app --> call procedure aniamls_with_no_app, no input needed
+      elif (visitor_action == "aniamls_with_no_app"):
+         valid_visitor_action = True
+         aniamls_with_no_app(cursor)
+      
+      # if submit_app --> call procedure submit_app, prompt user for their email, number of household members, current pet count, occupation,
+        # and id of the animal they want to adopt
+      elif (visitor_action == "submit_app"):
+         valid_visitor_action = True
+         submit_app(connection, cursor)
+
+      # if update_address --> call procedure update_address, prompt user for their email, new st num, new st name, new city, new state,
+        # and new zipcode
+      elif (visitor_action == "update_address"):
+         valid_visitor_action = True
+         update_address(connection, cursor)
+      
+      else:
+         print("That is not a valid visitor action")
+
+
+# handle check_app_status action
+def check_app_status(cursor):
+   print("Please provide the email you used to submit your application")
+   email = input("Email:\t")
+   try:
+      cursor.callproc("check_app_status", (email,))
+   except pymysql.Error as e:
+      code, msg = e.args
+      print(msg)
+
+# handle aniamls_with_no_app action
+def aniamls_with_no_app(cursor):
+   cursor.callproc("aniamls_with_no_app")
+   print(cursor.fetchall())
+
+# handle submit_app action
+def submit_app(connection, cursor):
+   print("Please provide your email, number of household members, number of current pets, occupation, and the id of the animal you would like to adopt")
+   email = input("Email:\t")
+   num_house_mem = input("Number of household members:\t")
+   num_curr_pets = input("Number of current pets:\t")
+   occupation = input("Occupation:\t")
+   animal_id = input("Animal ID:\t")
+
+   try:
+      cursor.callproc("submit_app", (email, int(num_house_mem), int(num_curr_pets),occupation, int(animal_id)))
+      connection.commit()
+      print("Application submitted!")
+   except pymysql.Error as e:
+      code, msg = e.args
+      print(msg)
+# handle update_address action
+def update_address(connection, cursor):
+  print("Please enter your email and new address (street number, street name, city, state, and zipcode)")
+  email = input("Email:\t")
+  st_num = input("Street number\t")
+  st_name = input("Street name:\t")
+  city = input("City:\t")
+  # handle incorrect state input length
+  state_len = False
+  while (not state_len):
+    state = input("State (abbrev to 2 characters): \t")
+    if (len(state) != 2):
+      print("Please make sure the state is abbreviated to 2 characters")
+    else:
+      state_len = True
+
+  # # handle incorrect zipcode input length
+  zipcode_len = False
+  while (not zipcode_len):
+    zipcode = input("Zipcode (must be 5 characters): \t")
+    if (len(zipcode) != 5):
+        print("Please make sure the zipcode is 5 characters")
+    else:
+        zipcode_len = True
+  
+  try:
+     cursor.callproc("update_address", (email, st_num, st_name, city, state, zipcode))
+     connection.commit()
+  except pymysql.Error as e:
+     code, msg = e.args
+     print(msg)
 
 # delegate staff actions
 def handle_staff_actions(connection, cursor):
@@ -262,7 +459,8 @@ def make_appt(connection, cursor):
           appt_vaccine_serial_no = input("Vaccine serial number:\t")
 
           try:
-              cursor.callproc("make_appt", ("vaccination", appt_notes, appt_date, appt_vet, appt_animal, appt_vaccine_name, appt_vaccine_version, appt_vaccine_serial_no))
+              cursor.callproc("make_appt", ("vaccination", appt_notes, appt_date, appt_vet, appt_animal, appt_vaccine_name, appt_vaccine_version,
+                                            appt_vaccine_serial_no))
               connection.commit()
               print("Appointment created!")
           except pymysql.Error as e:

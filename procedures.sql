@@ -63,9 +63,10 @@ create procedure validate_user (in username_p varchar(64), in password_p varchar
     end $$
 delimiter ;
 -- tests
-call validate_user ("lbluder", "hawkeyes", "manager");
+call validate_user ("lbluder", "j", "manager");
 call validate_user ("kcardoso", "sc10", "staff");
 call validate_user ("jroll@gmail.com", "jellyroll1", "visitor");
+call validate_user ("lbluder", "hawkeyes", "staff");
 
 
 -- when an animal gets adopted, set its kennel to null

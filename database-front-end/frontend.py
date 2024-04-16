@@ -561,7 +561,7 @@ def handle_visitor_actions(connection, cursor):
         elif (visitor_action == "update_address"):
             valid_visitor_action = True
             update_address(connection, cursor)
-
+            print("Address updated!")
         else:
             print("That is not a valid visitor action")
 

@@ -1,6 +1,5 @@
 -- ~~~~~~~ PROCEDURES/TRIGGERS ~~~~~~~~~
 use animal_shelter;
-Error Code: 1265. Data truncated for column 'appt_type' at row 1
 
 -- validate the user information
 delimiter $$

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from datetime import datetime
 import pymysql
-from pymysql import cursors
 
 
 # connect to database
@@ -161,6 +160,7 @@ def start_actions():
 
 # prints the list of actions a staff can do
 def staff_action_options():
+    start_actions()
     print("\nAs a staff member you can do the following:\n" +
           "1. See all shelter animals (see_shelter_animals)\n" +
           "2. Look up an animal's adoption status (look_up_animal)\n" +
@@ -168,27 +168,25 @@ def staff_action_options():
           "4. Look at shelter statistics (see_stats)\n" +
           "5. Add a new animal to the shelter (add_new_animal)\n" +
           "6. Make a new appointment for an animal (make_appt)\n")
-    # start_actions()
 
 
 # prints the list of actions a manager can do
 def manager_action_options():
     staff_action_options()
-    print("\n As a manager you also have additional abilities, such as:\n" +
+    print("\nAs a manager you also have additional abilities, such as:\n" +
           "7. Remove staff members that are fired or have quit (remove_staff)\n" +
           "8. Remove an animal, if it has unfortunately passed away (remove_animal)\n" +
           "9. Add a new staff member (add_staff)\n")
-    start_actions()
 
 
 # print the list of actions a visitor can do
 def visitor_action_options():
+    start_actions()
     print("\nAs a visitor, you can do the following:\n" +
           "1. Check your app status (check_app_status)\n" +
           "2. View the animals with no applications for them (animals_with_no_app)\n" +
           "3. Submit an application to adopt an animal (submit_app)\n" +
           "4. Update your address (update_address)\n")
-    start_actions()
 
 # delegate staff actions
 def handle_all_staff_actions(connection, cursor, is_manager):
@@ -242,46 +240,6 @@ def handle_all_staff_actions(connection, cursor, is_manager):
             add_staff(connection, cursor)
         else:
             print("That is not a valid action")
-
-
-# delegate staff actions
-def handle_staff_actions(connection, cursor):
-    # show the staff the option of actions
-    staff_action_options()
-    #valid_staff_action = False
-    # User can continue doing actions as long as they want
-    continue_actions = True
-    while continue_actions:
-        # take the input
-        staff_action = input("Action (type q to quit):\t")
-        # If they want to quit and stop doing actions
-        if staff_action.upper() == "Q":
-            continue_actions = False
-        # if see shelter animal --> call procedure see_shelter_animals(), no input needed
-        elif (staff_action == "see_shelter_animals"):
-            see_shelter_animals(cursor)
-        # if look up animal --> prompt for animal name or animal id, call lookup_animal with either input
-        # if user does not know, SQL gets null value for that attribute
-        elif (staff_action == "look_up_animal"):
-            look_up_animal(cursor)
-        # if see app status --> prompt for their email, call lookup_app_status with email or give error that no app exists
-        elif (staff_action == "see_app_status"):
-            see_app_status(cursor)
-        # if see_stats --> call capacity_stats, no input needed
-        elif (staff_action == "see_stats"):
-            see_stats(cursor)
-        # if add_new_animal --> prompt for animal's name, dob, sex, neutered, intake date, kennel, species, breed
-        # call new_animal with given input or give error that animal already exists
-        elif (staff_action == "add_new_animal"):
-            add_new_animal(connection, cursor)
-        # if make_appt --> prompt for appt type, notes, appt date, vet, animal
-        # if vaccine --> prompt for vaccine name, vaccine version, and vaccine serial number
-        # call make_appt
-        elif (staff_action == "make_appt"):
-            make_appt(connection, cursor)
-        else:
-            print("That is not a valid action for a staff member")
-
 
 # handle see_shelter_animal action
 def see_shelter_animals(cursor):
@@ -464,35 +422,6 @@ def make_appt(connection, cursor):
                 print(msg)
         else:
             print("Appointments can only be check up or vaccination")
-
-
-# delegate manager actions
-def handle_manager_actions(connection, cursor):
-    manager_action_options()
-
-    continue_actions = True
-    while continue_actions:
-        manager_action = input("Action (type q to quit):\t")
-        if manager_action.upper() == "Q":
-            continue_actions = False
-
-        # handle the same actions as a staff
-        # handle_staff_actions(connection, cursor, True)
-
-        # if remove_staff --> call remove_staff, prompt for the staff'd id and/or username
-        if (manager_action == "remove_staff"):
-            remove_staff(connection, cursor)
-        # if remove_animal --> call remove_animal, prompt for animal id
-        elif (manager_action == "remove_animal"):
-            remove_animal(connection, cursor)
-        # if add_staff --> call add_staff, prompt for staff's name, hours per week, full time, salary, approver status, username, password, and manager (maybe this manager)
-        elif (manager_action == "add_staff"):
-            add_staff(connection, cursor)
-        else:
-            print("That is not a valid action for a manager")
-
-        # handle_staff_actions(connection, cursor)
-
 
 # handle remove_staff action
 def remove_staff(connection, cursor):

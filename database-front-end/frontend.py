@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+ #!/usr/bin/env python3
 from datetime import datetime
 import pymysql
 
@@ -447,7 +447,7 @@ def make_appt(connection, cursor):
 # handle remove_staff action
 def remove_staff(connection, cursor):
     print(
-        "Please provide the ID of the staff member to be removed. If you don't know one of them, just hit enter")
+        "Please provide the ID of the staff member to be removed.)
     staff_id = must_be_int("Staff ID:\t")
 
     try:
@@ -532,7 +532,7 @@ def handle_visitor_actions(connection, cursor):
     # User can continue doing actions as long as they want
     continue_actions = True
     while continue_actions:
-        visitor_action = input("Action:\t")
+        visitor_action = input("Action (type q to quit):\t")
         if visitor_action.upper() == "Q":
             continue_actions = False
         # if check app status --> call procedure check_app_status, prompt user for their email

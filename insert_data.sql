@@ -85,8 +85,8 @@ INSERT INTO `animal_shelter`.`vaccine` (`name`, `version`) VALUES ('Influenza va
 INSERT INTO `animal_shelter`.`animal_urgent_care` (`animal`, `uc_id`) VALUES ('4', '1');
 INSERT INTO `animal_shelter`.`animal_urgent_care` (`animal`, `uc_id`) VALUES ('2', '2');
 
-INSERT INTO `animal_shelter`.`appointment` (`notes`, `app_date`, `appt_type`, `vet`, `animal`) VALUES ('Annual health check-up', '2022-07-09', 'checkup', '4', '4');
-INSERT INTO `animal_shelter`.`appointment` (`notes`, `app_date`, `appt_type`, `vet`, `animal`) VALUES ('Annual flu vaccination', '2024-02-15', 'vaccination', '7', '2');
+INSERT INTO `animal_shelter`.`appointment` (`notes`, `appt_date`, `appt_type`, `vet`, `animal`) VALUES ('Annual health check-up', '2022-07-09', 'checkup', '4', '4');
+INSERT INTO `animal_shelter`.`appointment` (`notes`, `appt_date`, `appt_type`, `vet`, `animal`) VALUES ('Annual flu vaccination', '2024-02-15', 'vaccination', '7', '2');
 
 INSERT INTO `animal_shelter`.`vaccinates` (`animal`, `staff`) VALUES ('4', '4');
 

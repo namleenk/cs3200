@@ -194,6 +194,9 @@ create procedure new_animal(in name_p varchar(64), in dob_p date, in sex_p enum(
 		-- have to repeat code b/c MySQL won't let us select columns from a procedure call (select * from (call capacity_stats()))
 		declare animals_in_shelter int;
         declare total_capacity int;
+        if kennel_p in (select kennel from animal) then 
+			signal sqlstate '45000' set message_text = "Kennel is already occupied.";
+		end if;
 		select count(*) from kennel into total_capacity; -- number of kennels
         (select count(*) from animal where kennel is not null) into animals_in_shelter;
         -- check if there is space available: if at capacity, give error and don't proceed
@@ -218,10 +221,9 @@ delimiter ;
 -- test
 call new_animal("Spice", '1999-01-05', "F", 1, '2024-04-12', 13, "Canis lupus", "Husky");
 
-
 -- Given an appt type, create the corresponding appointment (vaccination or checkup) for an animal
 delimiter $$
-create procedure make_appt (in appt_type_p enum('checkup', 'vaccination'), in notes_p varchar(256), in app_date_p date, in vet_p int, in animal_p int,
+create procedure make_appt (in appt_type_p enum('checkup', 'vaccination'), in notes_p varchar(256), in appt_date_p date, in vet_p int, in animal_p int,
 	in vac_name_p varchar(64), in vac_version_p int, in vaccine_serial_no_p int)
 	begin
 		declare taking_patients tinyint(1);
@@ -244,18 +246,18 @@ create procedure make_appt (in appt_type_p enum('checkup', 'vaccination'), in no
         -- if check-up then insert into appointment table and null the vaccine id
         if (appt_type_p = 'checkup') then
 			-- if no errors, insert into appointment and check up tables
-			insert into appointment (notes, app_date, appt_type, vet, animal)
-				values (notes_p, app_date_p, appt_type_p, vet_p, animal_p);
+			insert into appointment (notes, appt_date, appt_type, vet, animal)
+				values (notes_p, appt_date_p, appt_type_p, vet_p, animal_p);
 		end if;
         
         -- if involves vaccine then insert into appointment, vaccine, and update appoint_vaccine table
         if (appt_type_p = 'vaccination') then
 			-- an animal should only have 1 vaccination appointment on 1 day
-            select aid into var_aid from appointment where notes = notes_p and app_date = app_date_p and
+            select aid into var_aid from appointment where notes = notes_p and appt_date = appt_date_p and
 					appt_type = appt_type_p and vet = vet_p and animal = animal_p;
                     
-			insert into appointment (notes, app_date, appt_type, vet, animal)
-				values (notes_p, app_date_p, appt_type_p, vet_p, animal_p);
+			insert into appointment (notes, appt_date, appt_type, vet, animal)
+				values (notes_p, appt_date_p, appt_type_p, vet_p, animal_p);
 		-- if vaccine doesn't exist yet, add it to the vaccine table
 			if (vac_version_p not in (select version from vaccine where name = vac_name_p)) then
 				insert into vaccine (name, version) values (vac_name_p, vac_version_p);
@@ -268,7 +270,7 @@ create procedure make_appt (in appt_type_p enum('checkup', 'vaccination'), in no
 			end if;
 				-- update the appoint_vaccine with the appropriate data
 			insert into appoint_vaccine (appointment, vaccine, serial_no) values
-				((select aid from appointment where notes = notes_p and app_date = app_date_p and
+				((select aid from appointment where notes = notes_p and appt_date = appt_date_p and
 					appt_type = appt_type_p and vet = vet_p and animal = animal_p),
 					(select vac_id from vaccine where name = vac_name_p and version = vac_version_p),
 					vaccine_serial_no_p);
@@ -362,7 +364,11 @@ create procedure submit_app (in email_p varchar(64), in household_members_p int,
 		declare vid int;
 		-- check that the visitor exists
 		if (email_p not in (select email from visitor)) then
-			signal sqlstate '45000' set message_text = "This visitor does not exist yet. PLease register with a staff member";
+			signal sqlstate '45000' set message_text = "This visitor does not exist yet. Please register with a staff member";
+		end if;
+        -- check that the animal exists 
+        if (animal_p not in (select animal_id from animal)) then 
+			signal sqlstate '45000' set message_text = "This animal does not exist. Please check your input and try again.";
 		end if;
 		select visitor_id into vid from visitor where email = email_p;
 		insert into application (household_members, current_pets, occupation, status, animal, visitor, approver) values
@@ -381,9 +387,14 @@ create procedure update_address(in email_p varchar(64), in street_num_p int, in 
 	if ((street_num_p, street_name_p, city_p, state_p, zip_p) not in (select * from address)) then
 		insert into address values (street_num_p, street_name_p, city_p, state_p, zip_p);
 	end if;
-	update visitor set street_num = street_num_p, street_name = street_name_p, city = city_p, state = state_p, zipcode = zip_p
-		where email_p = visitor.email;
-	end $$
+    if email_p in (select email from visitor) then 
+		update visitor set street_num = street_num_p, street_name = street_name_p, city = city_p, state = state_p, zipcode = zip_p
+			where email_p = visitor.email;
+	end if;
+    if email_p not in (select email from visitor) then 
+    	signal sqlstate '45000' set message_text = "This visitor does not exist yet. PLease register with a staff member";
+	end if;
+    end $$
 delimiter ; 
 -- test
 call update_address("k.durant@northesatern.edu", 420, "America Lane", "Houston", "TX", "77001");
@@ -439,6 +450,7 @@ create procedure remove_animal (in animal_id_p int)
 		end if;
 		-- check if animal exists
         if (animal_id_p not in (select animal_id from animal)) then
+			signal sqlstate '45000' set message_text = "This animal does not exist";
 			signal sqlstate '45000' set message_text = "This animal does not exist";
 		end if;
         delete from animal where animal_id = animal_id_p;

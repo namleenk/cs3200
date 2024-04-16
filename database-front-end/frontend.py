@@ -1,4 +1,4 @@
- #!/usr/bin/env python3
+# !/usr/bin/env python3
 from datetime import datetime
 import pymysql
 
@@ -28,6 +28,7 @@ def must_be_int(prompt):
         except:
             print("This value must be an int")
     return user_input
+
 
 # MAIN FUNCTION
 def run():
@@ -255,12 +256,17 @@ def handle_all_staff_actions(connection, cursor, is_manager):
             print("That is not a valid action")
 
 
+def format_output(fetched_output):
+    for row in fetched_output:
+        row_as_list = list(row.items())
+        print([f"{x[0]}: {x[1]}" for x in row_as_list])
+
+
 # handle see_shelter_animal action
 def see_shelter_animals(cursor):
     cursor.callproc("see_shelter_animals")
     all_shelter_animals = cursor.fetchall()
-    for row in all_shelter_animals:
-        print(row)
+    format_output(all_shelter_animals)
 
 
 # handle look_up_animal action
@@ -299,8 +305,7 @@ def see_app_status(cursor):
 def see_stats(cursor):
     cursor.callproc("capacity_stats")
     all_shelter_animals = cursor.fetchall()
-    for row in all_shelter_animals:
-        print(row)
+    format_output(all_shelter_animals)
 
 
 # handle add_new_animal action
@@ -447,7 +452,7 @@ def make_appt(connection, cursor):
 # handle remove_staff action
 def remove_staff(connection, cursor):
     print(
-        "Please provide the ID of the staff member to be removed.)
+        "Please provide the ID of the staff member to be removed.")
     staff_id = must_be_int("Staff ID:\t")
 
     try:
@@ -517,7 +522,7 @@ def add_staff(connection, cursor):
 
     try:
         cursor.callproc("add_staff", (
-        name, int(hours_per_week), full_time, int(salary), approver_status, username, password, int(manager_id)))
+            name, int(hours_per_week), full_time, int(salary), approver_status, username, password, int(manager_id)))
         connection.commit()
         print("Staff added!")
     except pymysql.Error as e:

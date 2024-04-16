@@ -12,9 +12,10 @@ def connect_to_db():
                                      db='animal_shelter', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
         print('Connection successful')
         return connection
-    except pymysql.Error:
+    except (pymysql.Error, RuntimeError):
         print("Connection unsuccessful. Please check your username/password and try again.")
         return
+
 
 # handle inputs that must be an int
 def must_be_int(prompt):
@@ -28,13 +29,14 @@ def must_be_int(prompt):
             print("This value must be an int")
     return user_input
 
+# MAIN FUNCTION
 def run():
     connection = connect_to_db()
     if not connection:
         return
-
+    # Create cursor object
     cursor = connection.cursor()
-
+    # Prompt user to pick a view until they enter a valid input
     successful_choice = False
     while not successful_choice:
         print(
@@ -129,7 +131,6 @@ def create_new_visitor(connection, cursor):
     new_email = input("Email:\t")
     new_pswd = input("New password:\t")
 
-    
     new_street_num = must_be_int("Street number:\t")
     new_street_name = input("Street name:\t")
     new_city = input("City:\t")
@@ -201,15 +202,14 @@ def visitor_action_options():
           "3. Submit an application to adopt an animal (submit_app)\n" +
           "4. Update your address (update_address)\n")
 
+
 # delegate staff actions
 def handle_all_staff_actions(connection, cursor, is_manager):
-
     if (is_manager):
         manager_action_options()
     else:
         # show the staff the option of actions
         staff_action_options()
-    #valid_staff_action = False
     # User can continue doing actions as long as they want
     continue_actions = True
     while continue_actions:
@@ -242,17 +242,18 @@ def handle_all_staff_actions(connection, cursor, is_manager):
             make_appt(connection, cursor)
 
         # MANAGER ONLY ACTIONS
-         # if remove_staff --> call remove_staff, prompt for the staff'd id and/or username
+        # if remove_staff --> call remove_staff, prompt for the staff'd id and/or username
         elif (staff_action == "remove_staff" and is_manager):
             remove_staff(connection, cursor)
         # if remove_animal --> call remove_animal, prompt for animal id
         elif (staff_action == "remove_animal" and is_manager):
             remove_animal(connection, cursor)
         # if add_staff --> call add_staff, prompt for staff's name, hours per week, full time, salary, approver status, username, password, and manager (maybe this manager)
-        elif (staff_action == "add_staff" and  is_manager):
+        elif (staff_action == "add_staff" and is_manager):
             add_staff(connection, cursor)
         else:
             print("That is not a valid action")
+
 
 # handle see_shelter_animal action
 def see_shelter_animals(cursor):
@@ -425,14 +426,15 @@ def make_appt(connection, cursor):
             # handle non int input for vaccine version
 
             appt_vaccine_version = must_be_int("Vaccine version (number):\t")
-            
+
             # handle non int input for vaccine version
             appt_vaccine_serial_no = must_be_int("Vaccine serial number:\t")
 
             try:
                 cursor.callproc("make_appt", (
-                "vaccination", appt_notes, appt_date, appt_vet, appt_animal, appt_vaccine_name, appt_vaccine_version,
-                appt_vaccine_serial_no))
+                    "vaccination", appt_notes, appt_date, appt_vet, appt_animal, appt_vaccine_name,
+                    appt_vaccine_version,
+                    appt_vaccine_serial_no))
                 connection.commit()
                 print("Appointment created!")
             except pymysql.Error as e:
@@ -440,6 +442,7 @@ def make_appt(connection, cursor):
                 print(msg)
         else:
             print("Appointments can only be check up or vaccination")
+
 
 # handle remove_staff action
 def remove_staff(connection, cursor):
@@ -452,8 +455,8 @@ def remove_staff(connection, cursor):
         connection.commit()
         print("Staff removed!")
     except pymysql.Error as e:
-     code, msg = e.args
-     print(msg)
+        code, msg = e.args
+        print(msg)
 
 
 # handle remove_animal action
@@ -513,7 +516,8 @@ def add_staff(connection, cursor):
     manager_id = must_be_int("Manager ID:\t")
 
     try:
-        cursor.callproc("add_staff", (name, int(hours_per_week), full_time, int(salary), approver_status, username, password, int(manager_id)))
+        cursor.callproc("add_staff", (
+        name, int(hours_per_week), full_time, int(salary), approver_status, username, password, int(manager_id)))
         connection.commit()
         print("Staff added!")
     except pymysql.Error as e:
@@ -523,9 +527,9 @@ def add_staff(connection, cursor):
 
 # delegate visitor actions
 def handle_visitor_actions(connection, cursor):
+    # Display all valid actions
     visitor_action_options()
-    valid_visitor_action = False
-
+    # User can continue doing actions as long as they want
     continue_actions = True
     while continue_actions:
         visitor_action = input("Action:\t")

@@ -112,7 +112,7 @@ create table urgent_care (
 create table appointment (
 	aid int auto_increment primary key,
     notes varchar(256),
-    app_date date,
+    appt_date date,
     appt_type enum ('checkup', 'vaccination'),
     -- vet conducts appointment
     vet int,

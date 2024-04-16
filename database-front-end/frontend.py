@@ -532,7 +532,7 @@ def handle_visitor_actions(connection, cursor):
     # User can continue doing actions as long as they want
     continue_actions = True
     while continue_actions:
-        visitor_action = input("Action:\t")
+        visitor_action = input("Action (type q to quit):\t")
         if visitor_action.upper() == "Q":
             continue_actions = False
         # if check app status --> call procedure check_app_status, prompt user for their email

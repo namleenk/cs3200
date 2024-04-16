@@ -113,29 +113,13 @@ create table appointment (
 	aid int auto_increment primary key,
     notes varchar(256),
     app_date date,
+    appt_type enum ('checkup', 'vaccination'),
     -- vet conducts appointment
     vet int,
     foreign key (vet) references vet(vet_id) on update cascade on delete cascade,
      -- animal has appointment
     animal int,
     foreign key (animal) references animal(animal_id) on update cascade on delete cascade
-);
-
--- appiontment subclass {mandatory, or}
--- vaccination
-create table vaccination (
-	aid int auto_increment primary key,
-    vaccination_given varchar(64),
-    reason varchar(128),
-    -- FK to superclass
-    foreign key (aid) references appointment(aid) on update restrict on delete restrict
-);
-
--- checkup
-create table checkup (
-	aid int auto_increment primary key,
-    -- FK to superclass
-    foreign key (aid) references appointment(aid) on update restrict on delete restrict
 );
 
 -- application weak entity

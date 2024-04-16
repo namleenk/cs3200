@@ -1,5 +1,6 @@
 -- ~~~~~~~ PROCEDURES/TRIGGERS ~~~~~~~~~
 use animal_shelter;
+Error Code: 1265. Data truncated for column 'appt_type' at row 1
 
 -- validate the user information
 delimiter $$
@@ -220,7 +221,7 @@ call new_animal("Spice", '1999-01-05', "F", 1, '2024-04-12', 13, "Canis lupus", 
 
 -- Given an appt type, create the corresponding appointment (vaccination or checkup) for an animal
 delimiter $$
-create procedure make_appt (in appt_type varchar(64), in notes_p varchar(256), in app_date_p date, in vet_p int, in animal_p int,
+create procedure make_appt (in appt_type_p enum('checkup', 'vaccination'), in notes_p varchar(256), in app_date_p date, in vet_p int, in animal_p int,
 	in vac_name_p varchar(64), in vac_version_p int, in vaccine_serial_no_p int)
 	begin
 		declare taking_patients tinyint(1);
@@ -241,21 +242,20 @@ create procedure make_appt (in appt_type varchar(64), in notes_p varchar(256), i
         end if;
         
         -- if check-up then insert into appointment table and null the vaccine id
-        if (appt_type = "check up") then
+        if (appt_type_p = 'checkup') then
 			-- if no errors, insert into appointment and check up tables
-			insert into appointment (notes, app_date, vet, animal) values (notes_p, app_date_p, vet_p, animal_p);
-            
-			insert into checkup (select aid from appointment where notes = notes_p and app_date = app_date_p and
- 				vet = vet_p and animal = animal_p);
+			insert into appointment (notes, app_date, appt_type, vet, animal)
+				values (notes_p, app_date_p, appt_type_p, vet_p, animal_p);
 		end if;
         
         -- if involves vaccine then insert into appointment, vaccine, and update appoint_vaccine table
-        if (appt_type = "vaccination") then
+        if (appt_type_p = 'vaccination') then
 			-- an animal should only have 1 vaccination appointment on 1 day
             select aid into var_aid from appointment where notes = notes_p and app_date = app_date_p and
-					vet = vet_p and animal = animal_p;
+					appt_type = appt_type_p and vet = vet_p and animal = animal_p;
                     
-			insert into appointment (notes, app_date, vet, animal) values (notes_p, app_date_p, vet_p, animal_p);
+			insert into appointment (notes, app_date, appt_type, vet, animal)
+				values (notes_p, app_date_p, appt_type_p, vet_p, animal_p);
 		-- if vaccine doesn't exist yet, add it to the vaccine table
 			if (vac_version_p not in (select version from vaccine where name = vac_name_p)) then
 				insert into vaccine (name, version) values (vac_name_p, vac_version_p);
@@ -269,55 +269,16 @@ create procedure make_appt (in appt_type varchar(64), in notes_p varchar(256), i
 				-- update the appoint_vaccine with the appropriate data
 			insert into appoint_vaccine (appointment, vaccine, serial_no) values
 				((select aid from appointment where notes = notes_p and app_date = app_date_p and
-					vet = vet_p and animal = animal_p),
+					appt_type = appt_type_p and vet = vet_p and animal = animal_p),
 					(select vac_id from vaccine where name = vac_name_p and version = vac_version_p),
 					vaccine_serial_no_p);
 		end if;
     end $$
 delimiter ;
 -- tests
-call make_appt ("check up","annual check up", '2023-05-09', 7, 6, null, null, null);
-call make_appt ("vaccination", "flu shot", '2024-02-12', 7, 9, "Influenza vaccine", 3, 104);
-call make_appt ("vaccination", "covid", '2021-01-04', 4, 11, "COVID-19", 1, 35);
-
-/*
--- create a check up appointment
--- REMOVE IF GETTING RID OF APPOINTMENT SUBCLASSES
-delimiter $$
-create procedure create_check_up_appt (in notes_p varchar(256), in app_date_p date, in vet_p int, in animal_p int)
-	begin
-    	declare new_aid int;
-        
-		-- check for errors
-		call make_appt(notes_p, app_date_p, vet_p, animal_p);
-        
-        -- if no errors, insert into appointment and check up tables
-		insert into appointment (notes, app_date, vet, animal) values (notes_p, app_date_p, vet_p, animal_p);
-		select aid into new_aid from appointment where notes = notes_p and app_date = app_date_p and
-			vet = vet_p and animal = animal_p;
-		insert into check_up (aid) values (new_aid);
-    end $$
-delimiter ;
-
--- create a vaccination appointment
--- REMOVE IF GETTING RID OF APPOINTMENT SUBCLASSES
-delimiter $$
-create procedure create_vaccination_appt(in notes_p varchar(256), in app_date_p date, in vet_p int, in animal_p int,
-	in vacc_given_p varchar(64), in reason varchar(128))
-	begin
-		declare new_aid int;
-        
-		-- check for errors
-        call make_appt(notes_p, app_date_p, vet_p, animal_p);
-        
-        -- if no errors, insert into appointment and vaccination tables
-        insert into appointment (notes, app_date, vet, animal) values (notes_p, app_date_p, vet_p, animal_p);
-        select aid into new_aid from appointment where notes = notes_p and app_date = app_date_p and
-			vet = vet_p and animal = animal_p;
-		insert into vaccination (aid, vaccination_given, reason) values (new_aid, vacc_given_p, reason);
-    end $$
-delimiter ;
-*/
+call make_appt ('checkup',"annual check up", '2023-05-09', 7, 6, null, null, null);
+call make_appt ('vaccination', "flu shot", '2024-02-12', 7, 9, "Influenza vaccine", 3, 104);
+call make_appt ('vaccination', "covid", '2021-01-04', 4, 11, "COVID-19", 1, 35);
 
 
 -- to be used for the NEW VISITOR VIEW
@@ -471,6 +432,11 @@ delimiter ;
 delimiter $$
 create procedure remove_animal (in animal_id_p int)
 	begin
+		declare appt_id int;
+		-- if animal has an appointment, remove that appt first
+        if (animal_id_p in (select animal from appointment)) then
+            delete from appointment where aid = appt_id;
+		end if;
 		-- check if animal exists
         if (animal_id_p not in (select animal_id from animal)) then
 			signal sqlstate '45000' set message_text = "This animal does not exist";
@@ -478,4 +444,5 @@ create procedure remove_animal (in animal_id_p int)
         delete from animal where animal_id = animal_id_p;
     end $$
 delimiter ;
-call remove_animal(3);
+-- drop procedure remove_animal;
+call remove_animal(2);

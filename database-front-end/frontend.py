@@ -16,6 +16,17 @@ def connect_to_db():
         print("Connection unsuccessful. Please check your username/password and try again.")
         return
 
+# handle inputs that must be an int
+def must_be_int(prompt):
+    valid_input = False
+    while not valid_input:
+        try:
+            user_input = input(prompt)
+            user_input = int(user_input)
+            valid_input = True
+        except:
+            print("This value must be an int")
+    return user_input
 
 def run():
     connection = connect_to_db()
@@ -117,7 +128,9 @@ def create_new_visitor(connection, cursor):
 
     new_email = input("Email:\t")
     new_pswd = input("New password:\t")
-    new_street_num = input("Street number:\t")
+
+    
+    new_street_num = must_be_int("Street number:\t")
     new_street_name = input("Street name:\t")
     new_city = input("City:\t")
 
@@ -236,7 +249,7 @@ def handle_all_staff_actions(connection, cursor, is_manager):
         elif (staff_action == "remove_animal" and is_manager):
             remove_animal(connection, cursor)
         # if add_staff --> call add_staff, prompt for staff's name, hours per week, full time, salary, approver status, username, password, and manager (maybe this manager)
-        elif (staff_action == "add_staff" and  i):
+        elif (staff_action == "add_staff" and  is_manager):
             add_staff(connection, cursor)
         else:
             print("That is not a valid action")
@@ -253,7 +266,7 @@ def see_shelter_animals(cursor):
 def look_up_animal(cursor):
     print("Please enter the animal's name and id. If you don't know one of them, just hit enter")
     animal_name = input("Animal name:\t")
-    animal_id = input("Animal id:\t")
+    animal_id = must_be_int("Animal id:\t")
 
     # if user does not know, SQL gets null value for that attribute
     if (animal_name == ""):
@@ -275,7 +288,7 @@ def see_app_status(cursor):
     visitor_email = input("Visitor's email:\t")
     try:
         cursor.callproc("lookup_app_status", (visitor_email,))
-        print(cursor.fetchall())
+        print(cursor.fetchall()[0]['app_status'])
     except pymysql.Error as e:
         code, msg = e.args
         print(msg)
@@ -339,7 +352,7 @@ def add_new_animal(connection, cursor):
         except ValueError:
             print("Please make sure date is entered in the format YYYY-MM-DD")
 
-    new_animal_kennel = input("Kennel:\t")
+    new_animal_kennel = must_be_int("Kennel:\t")
     new_animal_species = input("Species:\t")
     new_animal_breed = input("Breed:\t")
 
@@ -376,12 +389,12 @@ def make_appt(connection, cursor):
                     appt_date_format = True
                 except ValueError:
                     print("Please make sure date is entered in the format YYYY-MM-DD")
-            appt_vet = input("Vet ID:\t")
-            appt_animal = input("Animal ID:\t")
+            appt_vet = must_be_int("Vet ID:\t")
+            appt_animal = must_be_int("Animal ID:\t")
 
             try:
                 cursor.callproc("make_appt",
-                                ("check up", appt_notes, appt_date, appt_vet, appt_animal, None, None, None))
+                                ("checkup", appt_notes, appt_date, appt_vet, appt_animal, None, None, None))
                 connection.commit()
                 print("Appointment created!")
             except pymysql.Error as e:
@@ -405,11 +418,16 @@ def make_appt(connection, cursor):
                 except ValueError:
                     print("Please make sure date is entered in the format YYYY-MM-DD")
 
-            appt_vet = input("Vet ID:\t")
-            appt_animal = input("Animal ID:\t")
+            appt_vet = must_be_int("Vet ID:\t")
+            appt_animal = must_be_int("Animal ID:\t")
             appt_vaccine_name = input("Vaccine name:\t")
-            appt_vaccine_version = input("Vaccine version:\t")
-            appt_vaccine_serial_no = input("Vaccine serial number:\t")
+
+            # handle non int input for vaccine version
+
+            appt_vaccine_version = must_be_int("Vaccine version (number):\t")
+            
+            # handle non int input for vaccine version
+            appt_vaccine_serial_no = must_be_int("Vaccine serial number:\t")
 
             try:
                 cursor.callproc("make_appt", (
@@ -427,7 +445,7 @@ def make_appt(connection, cursor):
 def remove_staff(connection, cursor):
     print(
         "Please provide the ID of the staff member to be removed. If you don't know one of them, just hit enter")
-    staff_id = input("Staff ID:\t")
+    staff_id = must_be_int("Staff ID:\t")
 
     try:
         cursor.callproc("remove_staff", (int(staff_id),))
@@ -441,7 +459,7 @@ def remove_staff(connection, cursor):
 # handle remove_animal action
 def remove_animal(connection, cursor):
     print("Please enter the ID of the animal to be removed")
-    animal_id = input("Animal ID:\t")
+    animal_id = must_be_int("Animal ID:\t")
 
     try:
         cursor.callproc("remove_animal", (animal_id,))
@@ -455,12 +473,12 @@ def remove_animal(connection, cursor):
 # handle add_staff action
 def add_staff(connection, cursor):
     print(
-        "Please enter the new staff members's name, how many hours they work per week, if they are full time, "
+        "Please enter the new staff members's name, how many hours they work per week, if they are full time, " +
         "their salary, if they have approver status, " +
         "their username, their password, and their manager's ID")
 
     name = input("Name:\t")
-    hours_per_week = input("Hours per week:\t")
+    hours_per_week = must_be_int("Hours per week:\t")
 
     # handle if the staff is full time
     full_time_valid = False
@@ -475,7 +493,7 @@ def add_staff(connection, cursor):
         else:
             print("Please enter either T or F for if the staff member will be full time or not")
 
-    salary = input("Salary (for the year, ex: 10 = 10k):\t")
+    salary = must_be_int("Salary (for the year, ex: 10 = 10k):\t")
 
     # handle if the staff has approver status
     approver_status_valid = False
@@ -492,11 +510,10 @@ def add_staff(connection, cursor):
 
     username = input("Username:\t")
     password = input("Password:\t")
-    manager_id = input("Manager ID:\t")
+    manager_id = must_be_int("Manager ID:\t")
 
     try:
-        cursor.callproc("add_staff", (
-        name, int(hours_per_week), full_time, int(salary), approver_status, username, password, int(manager_id)))
+        cursor.callproc("add_staff", (name, int(hours_per_week), full_time, int(salary), approver_status, username, password, int(manager_id)))
         connection.commit()
         print("Staff added!")
     except pymysql.Error as e:
@@ -565,10 +582,10 @@ def submit_app(connection, cursor):
     print(
         "Please provide your email, number of household members, number of current pets, occupation, and the id of the animal you would like to adopt")
     email = input("Email:\t")
-    num_house_mem = input("Number of household members:\t")
-    num_curr_pets = input("Number of current pets:\t")
+    num_house_mem = must_be_int("Number of household members:\t")
+    num_curr_pets = must_be_int("Number of current pets:\t")
     occupation = input("Occupation:\t")
-    animal_id = input("Animal ID:\t")
+    animal_id = must_be_int("Animal ID:\t")
 
     try:
         cursor.callproc("submit_app", (email, int(num_house_mem), int(num_curr_pets), occupation, int(animal_id)))
@@ -583,7 +600,7 @@ def submit_app(connection, cursor):
 def update_address(connection, cursor):
     print("Please enter your email and new address (street number, street name, city, state, and zipcode)")
     email = input("Email:\t")
-    st_num = input("Street number:\t")
+    st_num = must_be_int("Street number:\t")
     st_name = input("Street name:\t")
     city = input("City:\t")
     # handle incorrect state input length
